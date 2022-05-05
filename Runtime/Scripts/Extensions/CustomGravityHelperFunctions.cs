@@ -9,7 +9,7 @@ public static class CustomGravityHelperFunctions
     private static string _gravitySourceEventsChannleSOName = "GravitySourceEventsChannelSO.asset";
     private static string _applyGravityEventsChannleSOName = "ApplyGravityEventsChannelSO.asset";
     //private static string _packageName = "com.weston-wright.custom-gravity";
-    private static string _packageName = "custom-gravity-unity";
+    private static string _packageName = "com.weston-wright.custom-gravity-unity";
     private static string _scriptableObjectsPath = "/Runtime/Scriptable Objects/";
 
     public static GravitySourceEventsChannelSO _gravitySourceEventsChannel;
