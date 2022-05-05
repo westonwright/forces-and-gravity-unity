@@ -18,11 +18,14 @@ public class GravitySource : MonoBehaviour
     protected float gravityStrength = 9.8f;
     [SerializeField]
     protected float falloffRange = 0f;
+    // TODO: Add selector for type of falloff. eg. linear, inverse square, etc.)
 
     [Tooltip("If this source should be used over another. Higher is less important. Set to 0 if importance doesn't matter")]
     public int importance = 0;
     [Tooltip("Additive means this effector will add its force to the active gravity field instead of overriding it")]
     public bool additive = false;
+    [Tooltip("If the Gravity Vector produced from this source should be inverted")]
+    public bool invert = false;
     //[SerializeField]
     // used if you dont want the gravity manager to manually detect this gravity source. Should usually be true
     //protected bool addSelfToGravityManager = true;
@@ -70,7 +73,7 @@ public class GravitySource : MonoBehaviour
     {
         //prevents this from being added to objects
         this.hideFlags = HideFlags.HideAndDontSave | HideFlags.HideInInspector;
-        Debug.LogError("Use \"GravityZone\" or \"GravitySurface\" instead of \"GravitySource\"!", gameObject);
+        Debug.LogError("Use \"GravityZone\", \"GravitySurface\", or \"GravityPoint\" instead of \"GravitySource\"!", gameObject);
         Debug.LogWarning("Destroyed \"GravitySource\" Component", gameObject);
         DestroyImmediate(this);
     }

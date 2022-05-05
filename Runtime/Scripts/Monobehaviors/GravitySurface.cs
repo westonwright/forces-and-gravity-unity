@@ -46,7 +46,7 @@ public class GravitySurface : GravitySource
                     falloffMesh.vertices = (col as MeshCollider).sharedMesh.vertices;
                     falloffMesh.triangles = (col as MeshCollider).sharedMesh.triangles;
                     falloffMesh.normals = (col as MeshCollider).sharedMesh.normals;
-                    Gizmos.color = new Color(1, 0, 0, .25f);
+                    Gizmos.color = CustomGravityHelperFunctions.MultiplyColors(Gizmos.color, new Color(1, 1, 1, .25f)); //makes falloff semi-transparent
                     for (int i = 0; i < vertices.Length; i++)
                     {
                         vertices[i] += normals[i] * falloffRange;
@@ -59,13 +59,13 @@ public class GravitySurface : GravitySource
             else if (col is SphereCollider)
             {
                 Gizmos.DrawWireSphere(CustomGravityHelperFunctions.MultiplyVectors(transform.localScale, (col as SphereCollider).center), (CustomGravityHelperFunctions.VectorMax(transform.localScale) * (col as SphereCollider).radius) + gravityRange);
-                Gizmos.color = new Color(1, 0, 0, .25f);
+                Gizmos.color = CustomGravityHelperFunctions.MultiplyColors(Gizmos.color, new Color(1, 1, 1, .25f)); //makes falloff semi-transparent
                 Gizmos.DrawWireSphere(CustomGravityHelperFunctions.MultiplyVectors(transform.localScale, (col as SphereCollider).center), (CustomGravityHelperFunctions.VectorMax(transform.localScale) * (col as SphereCollider).radius) + gravityRange + falloffRange);
             }
             else if (col is BoxCollider)
             {
                 Gizmos.DrawWireCube(CustomGravityHelperFunctions.MultiplyVectors(transform.localScale, (col as BoxCollider).center), CustomGravityHelperFunctions.AddToVector(CustomGravityHelperFunctions.MultiplyVectors(transform.localScale, (col as BoxCollider).size), gravityRange));
-                Gizmos.color = new Color(1, 0, 0, .25f);
+                Gizmos.color = CustomGravityHelperFunctions.MultiplyColors(Gizmos.color, new Color(1, 1, 1, .25f)); //makes falloff semi-transparent
                 Gizmos.DrawWireCube(CustomGravityHelperFunctions.MultiplyVectors(transform.localScale, (col as BoxCollider).center), CustomGravityHelperFunctions.AddToVector(CustomGravityHelperFunctions.MultiplyVectors(transform.localScale, (col as BoxCollider).size), gravityRange + falloffRange));
             }
             //figure this out later

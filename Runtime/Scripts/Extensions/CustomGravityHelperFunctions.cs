@@ -174,6 +174,11 @@ public static class CustomGravityHelperFunctions
         color = ((vectorA * alphaA) + ((vectorB * alphaB) * (1 - alphaA))) / alpha;
     }
 
+    public static Color MultiplyColors(Color c1, Color c2)
+    {
+        return new Color(c1.r * c2.r, c1.g * c2.g, c1.b * c2.b, c1.a * c2.a);
+    }
+    
     public static Vector3 MultiplyVectors(Vector3 v1, Vector3 v2)
     {
         return new Vector3(v1.x * v2.x, v1.y * v2.y, v1.z * v2.z);

@@ -162,8 +162,8 @@ public class GravityManager : MonoBehaviour
             //only calculate if gravity isn't at 100% and not additive
             if (!source.additive && alpha < 1)
             {
-                float strength;
-                Vector3 vector = source.GravityVector(point, out strength);
+                Vector3 vector = source.GravityVector(point, out float strength);
+                vector *= source.invert ? -1 : 1;
                 if (strength > 0)
                 {
                     CustomGravityHelperFunctions.GravityCompositeStraight(alpha, strength, gravityVector, vector, out alpha, out gravityVector);
@@ -189,9 +189,9 @@ public class GravityManager : MonoBehaviour
             // only calculate if gravity isn't at 100% and not additive
             if (source.additive)
             {
-                float strength;
-                Vector3 vector = source.GravityVector(point, out strength);
-                if(strength > 0)
+                Vector3 vector = source.GravityVector(point, out float strength);
+                vector *= source.invert ? -1 : 1;
+                if (strength > 0)
                 {
                     forceVector += vector * strength;
                 }
@@ -213,8 +213,8 @@ public class GravityManager : MonoBehaviour
             // only calculate if gravity isn't at 100% and not additive
             if (!source.additive && alpha < 1)
             {
-                float strength;
-                Vector3 vector = source.GravityVector(point, out strength);
+                Vector3 vector = source.GravityVector(point, out float strength);
+                vector *= source.invert ? -1 : 1;
                 if (strength > 0)
                 {
                     CustomGravityHelperFunctions.GravityCompositeStraight(alpha, strength, gravityVector, vector, out alpha, out gravityVector);
@@ -222,9 +222,9 @@ public class GravityManager : MonoBehaviour
             }
             else if (source.additive)
             {
-                float strength;
-                Vector3 vector = source.GravityVector(point, out strength);
-                if(strength > 0)
+                Vector3 vector = source.GravityVector(point, out float strength);
+                vector *= source.invert ? -1 : 1;
+                if (strength > 0)
                 {
                     forceVector += vector * strength;
                 }

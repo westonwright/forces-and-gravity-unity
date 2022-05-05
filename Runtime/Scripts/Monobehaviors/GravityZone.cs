@@ -24,7 +24,7 @@ public class GravityZone : GravitySource
 
             if (falloffRange > 0)
             {
-                Gizmos.color = new Color(0, 0, 1, .25f);//semi-transparent blue
+                Gizmos.color = CustomGravityHelperFunctions.MultiplyColors(Gizmos.color, new Color(1, 1, 1, .25f)); //makes falloff semi-transparent
                 Gizmos.DrawWireCube(CustomGravityHelperFunctions.MultiplyVectors(transform.localScale, col.center), CustomGravityHelperFunctions.AddToVector(CustomGravityHelperFunctions.MultiplyVectors(transform.localScale, col.size), falloffRange * 2));
             }
 

@@ -1,7 +1,7 @@
 {
   "name": "com.weston-wright.custom-gravity-unity",
   "description": "This package allows for custom gravity from arbitrary shapes, meshes, and zones",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "unity": "2020.3",
   "unityRelease": "26f1",
   "displayName": "Custom Gravity",
