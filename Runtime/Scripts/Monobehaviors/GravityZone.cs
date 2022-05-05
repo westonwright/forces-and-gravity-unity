@@ -74,14 +74,14 @@ public class GravityZone : GravitySource
             if (zoneBounds.Contains(transformPoint))
             {
                 strength = 1;
-                return gravityDirection * gravityStrength;
+                return gravityDirection.normalized * gravityStrength;
             }
             else
             {
                 //I think I need to use clamp here because there might be times where the distance
                 //is greater than the falloff range particularly at the corners of the box
                 strength = 1 - Mathf.Clamp(Vector3.Distance(zoneBounds.ClosestPoint(transformPoint), transformPoint) / falloffRange, 0, 1);
-                return gravityDirection * gravityStrength;
+                return gravityDirection.normalized * gravityStrength;
             }
         }
         else
@@ -93,7 +93,7 @@ public class GravityZone : GravitySource
     //returns the full gravity vector regardless of if the point is in the collider or not
     public override Vector3 GravityVector(Vector3 point)
     {
-        return gravityDirection * gravityStrength;
+        return gravityDirection.normalized * gravityStrength;
     }
 
     public void UpdateBounds()
