@@ -108,10 +108,11 @@ Please make sure to update tests as appropriate.
 
 ## Code Examples
 ```c#
+// must inherit from ForceProducer
 public class ExampleForceProducer : ForceProducer
 {
     // must call Initialize even if not using it
-    // used in parent class to prevent using it
+    // used in parent class to prevent attaching it to a game object
     // called from Awake()
     public override void Initialize()
     {
