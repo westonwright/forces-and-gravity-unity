@@ -107,18 +107,21 @@ Pull requests are welcome. For major changes, please open an issue first to disc
 Please make sure to update tests as appropriate.
 
 ## Code Examples
-```c#
-// must inherit from ForceProducer
-public class ExampleForceProducer : ForceProducer
-{
-    // you can also declare any custom variables or methods
 
-    // must call Initialize even if not using it
-    // used in parent class to prevent attaching it to a game object
-    // called from Awake()
-    public override void Initialize()
-    {
-    }
+### Creating Your Own Force Producer
+
+```c#
+// This Force Producer will create a force in the 
+// direction of a given point from the world origin
+
+// must inherit from ForceProducer!
+public class ForceProducerExample : ForceProducer
+{
+    // you can declare any custom variables or methods
+    // consider adding some Gizmos to make it more clear what your ForceProducer is doing
+    
+    // if you override OnEnable or OnDisable you must add 
+    // this Force Producer to the ForceManagerSO manually!
 
     // called from ForceManager
     // return force vector for provided point. Use whatever calculation you want
@@ -138,14 +141,74 @@ public class ExampleForceProducer : ForceProducer
     // will usually be the same calculation as function above but without strength
     public override Vector3 ForceVector(Vector3 point)
     {
-        return forceDirection.normalized * forceStrength;
+        return point.normalized * forceStrength;
+    }
+}
+```
+
+### Accessing Force Data From Your Own Script
+```c#
+// This Script will Output the force at its position to the Debug Log
+public class ForceDetectorExample : MonoBehaviour
+{
+    // reads from
+    // you MUST have this to get data
+    // we will get it in Start/Awake
+    private ForceManagerSO forceManagerSO;
+    
+    // Start is called before the first frame update
+    private void Start()
+    {
+        // ForcesStaticMembers contains a refrence to the Scriptable Object we need!
+        forceManagerSO = ForcesStaticMembers.forceManagerSO;
+    }
+    
+    private void Update()
+    {
+        if(forceManagerSO != null)
+        {
+            // ForceManagerSO has multiple functions you can use to get information about
+            // forces at a given point in the scene. Learn more in the Documentation.
+            // this function returns an array of force vectors for all of the types of force
+            Vector3[] forceVectors = forceManagerSO.GetTotalForcesAtPoint(rb.position, layer);
+            
+            // ForcesStaticMembers also stores the count for how many types of forces there are
+            // we want to loop through for each type of force
+            for (int i = 0; i < ForcesStaticMembers.forceTypeCount; i++)
+            {
+                // ForceType is an enum with the default 4 force modes (Force, Acceleration, Impulse, VelocityChange)
+                // as well as two additional types (Gravity, Generic) for use in scripts like there.
+                // Gravity ordinarily would act idential to Acceleration but we might need the distinction for some acitons
+                switch ((ForceType)i)
+                {
+                    case ForceType.Force:
+                        Debug.Log("Force Vector: " + forceVectors[i]);
+                        break;
+                    case ForceType.Acceleration:
+                        Debug.Log("Acceleration Vector: " + forceVectors[i]);
+                        break;
+                    case ForceType.Impulse:
+                        Debug.Log("Impulse Vector: " + forceVectors[i]);
+                        break;
+                    case ForceType.VelocityChang:
+                        Debug.Log("Velocity Change Vector: " + forceVectors[i]);
+                        break;
+                    case ForceType.Gravity:
+                        Debug.Log("Gravity Vector: " + forceVectors[i]);
+                        break;
+                    case ForceType.Generic:
+                        Debug.Log("Generic Vector: " + forceVectors[i]);
+                        break;
+                }
+            }
+            Debug.Log()
+        }
     }
 }
 ```
 
 ## Roadmap
 * Complete Documentation.
-* Better guidance on creating custom classes from the system.
 * Support for Capsule and Terrain collider previews
 
 ## License
