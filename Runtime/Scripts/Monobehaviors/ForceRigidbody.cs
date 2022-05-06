@@ -12,7 +12,7 @@ public class ForceRigidbody : MonoBehaviour
 
     protected Rigidbody rb;
 
-    // broadcasts to
+    // reads from
     private ForceManagerSO forceManagerSO;
 
     // Start is called before the first frame update
