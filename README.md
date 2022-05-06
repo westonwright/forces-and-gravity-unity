@@ -3,7 +3,12 @@
 This package gives you the ability to apply custom forces and gravity
 to objects in your scene based on arbitrary meshes, zones, and points.
 
-There's a lot more information on the [Wiki](https://github.com/westonwright/forces-and-gravity-unity/wiki)!
+## Check the [Wiki](https://github.com/westonwright/forces-and-gravity-unity/wiki)!
+Theres a lot of information there like:
+* [Features](https://github.com/westonwright/forces-and-gravity-unity/wiki/Features)
+* [Code Examples](https://github.com/westonwright/forces-and-gravity-unity/wiki/Code-Examples)
+* [Documentation](https://github.com/westonwright/forces-and-gravity-unity/wiki/Documentation)
+* [Roadmap](https://github.com/westonwright/forces-and-gravity-unity/wiki/Roadmap)
 
 ## Follow My Stuff :)
 [twitter](https://twitter.com/WestonWright_)
@@ -11,6 +16,7 @@ There's a lot more information on the [Wiki](https://github.com/westonwright/for
 [github](https://github.com/westonwright)
 
 ## [Features](https://github.com/westonwright/forces-and-gravity-unity/wiki/Features)
+are on the [Wiki](https://github.com/westonwright/forces-and-gravity-unity/wiki) :)
 
 ## Supported Versions
 Unity 2017 and up
