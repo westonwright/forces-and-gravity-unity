@@ -80,8 +80,8 @@ Unique Variables:
 - *Force Direction*
   > The direction in which force will be applied within this zone. Normalized at runtime.  
 
-### Force Receiver
-Apply a *Force Receiver* to a rigidbody to allow it receive forces from *Force Providers*
+### Rigidbody Force Receiver
+Apply a forces to a rigidbody from *Force Providers* in the scene.
 
 Variables:
 - *Enable Forces*
