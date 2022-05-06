@@ -111,6 +111,8 @@ Please make sure to update tests as appropriate.
 // must inherit from ForceProducer
 public class ExampleForceProducer : ForceProducer
 {
+    // you can also declare any custom variables or methods
+
     // must call Initialize even if not using it
     // used in parent class to prevent attaching it to a game object
     // called from Awake()
