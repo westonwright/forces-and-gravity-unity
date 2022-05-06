@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 [RequireComponent(typeof(Rigidbody))]
-public class ForceRigidbody : MonoBehaviour
+public class RigidbodyForceReceiver : MonoBehaviour
 {
     [Tooltip("If this object should be affected by forces by default.")]
     public bool enableForces = true;
