@@ -19,7 +19,7 @@ public class ForceSurface : ForceProducer
 
     private Collider forceCollider;
 
-    private void OnDrawGizmos()
+    protected override void OnDrawGizmos()
     {
         if (preview)
         {
@@ -108,33 +108,28 @@ public class ForceSurface : ForceProducer
         }
     }
 
-    // called from Awake 
-    public override void Initialize()
+    private void Awake()
     {
-        //be sure to only run when playing
-        if (Application.isPlaying)
-        {
-            forceCollider = GetComponent<Collider>();
+        forceCollider = GetComponent<Collider>();
 
-            if (forceCollider != null)
+        if (forceCollider != null)
+        {
+            if (forceCollider is MeshCollider)
             {
-                if (forceCollider is MeshCollider)
+                if (gameObject.GetComponent<MeshKDTree>() == null)
                 {
-                    if (gameObject.GetComponent<MeshKDTree>() == null)
-                    {
-                        Debug.LogWarning("Force Surface \"" + gameObject.name + "\" does not have a MeshKDTree component for its Mesh! Additional calculations will happen every frame!", gameObject);
-                    }
-                }
-                else
-                {
-                    if (gameObject.GetComponent<MeshKDTree>() != null)
-                    {
-                        Debug.LogWarning("Force Surface \"" + gameObject.name + "\" does not need a MeshKDTree component because it is not using a Mesh Collider", gameObject);
-                    }
+                    Debug.LogWarning("Force Surface \"" + gameObject.name + "\" does not have a MeshKDTree component for its Mesh! Additional calculations will happen every frame!", gameObject);
                 }
             }
-            UpdateActivationRadius();
+            else
+            {
+                if (gameObject.GetComponent<MeshKDTree>() != null)
+                {
+                    Debug.LogWarning("Force Surface \"" + gameObject.name + "\" does not need a MeshKDTree component because it is not using a Mesh Collider", gameObject);
+                }
+            }
         }
+        UpdateActivationRadius();
     }
 
     public override Vector3 ForceVector(Vector3 point, out float strength)

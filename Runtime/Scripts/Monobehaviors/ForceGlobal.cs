@@ -9,7 +9,7 @@ public class ForceGlobal : ForceProducer
     // TODO: find a better system for setting gravity direction from editor
     private Vector3 forceDirection = Vector3.down;
 
-    private void OnDrawGizmos()
+    protected override void OnDrawGizmos()
     {
         if (preview)
         {
@@ -36,11 +36,6 @@ public class ForceGlobal : ForceProducer
         }
     }
    
-
-    public override void Initialize()
-    {
-    }
-
     public override Vector3 ForceVector(Vector3 point, out float strength)
     {
         strength = 1;

@@ -1,75 +1,15 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using System;
 
-public class ForceManager : MonoBehaviour
+//[CreateAssetMenu(fileName = "LoadEventsChannel", menuName = "Events/Load Event Channel")]
+public class ForceManagerSO : ScriptableObject
 {
     private List<ForceProducer> producers = new List<ForceProducer>();
-    private List<ForceReceiver> receivers = new List<ForceReceiver>();
 
-    // listens to
-    private ForceProducerEventsChannelSO forceProducerEventsChannel;
-    private ForceReceiverEventsChannelSO forceReceiverEventsChannel;
-
-    private void Awake()
-    {
-        forceProducerEventsChannel = ForcesStaticMembers.forceProducerEventsChannel;
-        forceReceiverEventsChannel = ForcesStaticMembers.forceReceiverEventsChannel;
-        //defaultGravityDirection = defaultGravityDirection.normalized;
-    }
-
-    private void OnEnable()
-    {
-        if (forceProducerEventsChannel != null)
-        {
-            forceProducerEventsChannel.OnAddForceProducerRequested += AddForceProducer;
-            forceProducerEventsChannel.OnRemoveForceProducerRequested += RemoveForceProducer;
-        }
-        
-        if (forceReceiverEventsChannel != null)
-        {
-            forceReceiverEventsChannel.OnAddForceReceiverRequested += AddForceReceiver;
-            forceReceiverEventsChannel.OnRemoveForceReceiverRequested += RemoveForceReceiver;
-        }
-    }
-
-    private void OnDisable()
-    {
-        if (forceProducerEventsChannel != null)
-        {
-            forceProducerEventsChannel.OnAddForceProducerRequested -= AddForceProducer;
-            forceProducerEventsChannel.OnRemoveForceProducerRequested -= RemoveForceProducer;
-        }
-
-        if (forceReceiverEventsChannel != null)
-        {
-            forceReceiverEventsChannel.OnAddForceReceiverRequested -= AddForceReceiver;
-            forceReceiverEventsChannel.OnRemoveForceReceiverRequested -= RemoveForceReceiver;
-        }
-    }
-
-    private void FixedUpdate()
-    {
-        foreach (ForceReceiver receiver in receivers)
-        {
-            if (receiver.enableForces)
-            {
-                int? layer = null;
-                if (receiver.useLayerMask) layer = receiver.gameObject.layer;
-
-
-                Vector3[] forceVectors = GetTotalForcesAtPoint(receiver.GetPosition(), layer);
-                for (int i = 0; i < 6; i++)
-                {
-                    receiver.ApplyForce(forceVectors[i], (ForceType)i);
-                }
-            }
-        }
-    }
 
     // use this from gravity attractors to add them in as they load with a scene
-    private void AddForceProducer(ForceProducer producer)
+    public void AddForceProducer(ForceProducer producer)
     {
         if (!producers.Contains(producer))
         {
@@ -80,42 +20,27 @@ public class ForceManager : MonoBehaviour
     }
 
     // use this from gravity attractors to remove them in as they unload with a scene
-    private void RemoveForceProducer(ForceProducer producer)
+    public void RemoveForceProducer(ForceProducer producer)
     {
         producers.Remove(producer);
-    }
-    
-    // use this from gravity objects to add them in as they load with a scene
-    private void AddForceReceiver(ForceReceiver receiver)
-    {
-        if (!receivers.Contains(receiver))
-        {
-            receivers.Add(receiver);
-        }
-    }
-
-    // use this from gravity attractors to remove them in as they unload with a scene
-    private void RemoveForceReceiver(ForceReceiver receiver)
-    {
-        receivers.Remove(receiver);
     }
 
     // sorts source importance from low to high, with 0 at the end
     private void SortProducers()
     {
-        if(producers.Count > 0)
+        if (producers.Count > 0)
         {
             List<ForceProducer> positives = new List<ForceProducer>();
-            List<ForceProducer> negatives = new List<ForceProducer>(); 
+            List<ForceProducer> negatives = new List<ForceProducer>();
             List<ForceProducer> zeroes = new List<ForceProducer>();
 
             foreach (ForceProducer producer in producers)
             {
-                if(producer.importance > 0)
+                if (producer.importance > 0)
                 {
                     positives.Add(producer);
                 }
-                else if(producer.importance < 0)
+                else if (producer.importance < 0)
                 {
                     negatives.Add(producer);
                 }
@@ -131,7 +56,7 @@ public class ForceManager : MonoBehaviour
             {
                 producers.Add(positives[i]);
             }
-            
+
             for (int i = negatives.Count - 1; i >= 0; i--)
             {
                 producers.Add(negatives[i]);
@@ -181,7 +106,7 @@ public class ForceManager : MonoBehaviour
         Vector3 forceVector = Vector3.zero;
         float alpha = 0;
 
-        foreach(ForceProducer producer in producers)
+        foreach (ForceProducer producer in producers)
         {
             if (!producer.enableForce || (producer.forceType != forceType)) continue;
             // if layer is set, check against layer mask

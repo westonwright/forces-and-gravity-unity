@@ -19,7 +19,7 @@ public class ForceZone : ForceProducer
     private Bounds falloffBounds;
 
     private BoxCollider zoneCollider;
-    private void OnDrawGizmos()
+    protected override void OnDrawGizmos()
     {
         if (preview)
         {
@@ -77,16 +77,12 @@ public class ForceZone : ForceProducer
         }
     }
 
-
-    public override void Initialize()
+    private void Awake()
     {
-        if (Application.isPlaying)
-        {
-            zoneCollider = GetComponent<BoxCollider>();
-            zoneCollider.isTrigger = true;
+        zoneCollider = GetComponent<BoxCollider>();
+        zoneCollider.isTrigger = true;
 
-            UpdateBounds();
-        }
+        UpdateBounds();
     }
 
     public override Vector3 ForceVector(Vector3 point, out float strength)

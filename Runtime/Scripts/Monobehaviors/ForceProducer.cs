@@ -2,7 +2,9 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-[ExecuteAlways]
+/// <summary>
+/// Base class for all force producers. This one just pulls in the object from anywhere
+/// </summary>
 public class ForceProducer : MonoBehaviour
 {
     //if gizmos should be drawn
@@ -30,64 +32,67 @@ public class ForceProducer : MonoBehaviour
     public bool invert = false;
 
     // broadcasts to
-    private ForceProducerEventsChannelSO forceProducerEventsChannel;
+    private ForceManagerSO forceManagerSO;
 
-    private void Awake()
+    protected virtual void OnDrawGizmos()
     {
-        Initialize();
+        Gizmos.matrix = Matrix4x4.TRS(transform.position, Quaternion.identity, Vector3.one);
+
+        switch (forceType)
+        {
+            case ForceType.Force:
+                Gizmos.color = new Color(1, 0, 0, 1);
+                break;
+            case ForceType.Acceleration:
+                Gizmos.color = new Color(1, .5f, 0, 1);
+                break;
+            case ForceType.Impulse:
+                Gizmos.color = new Color(1, 1, 0, 1);
+                break;
+            case ForceType.VelocityChang:
+                Gizmos.color = new Color(.5f, 1, 0, 1);
+                break;
+            case ForceType.Gravity:
+                Gizmos.color = new Color(0, 1, 0, 1);
+                break;
+            case ForceType.Generic:
+                Gizmos.color = new Color(0, 1, .5f, 1);
+                break;
+        }
+        Gizmos.color = (additive ? Gizmos.color : Gizmos.color * new Color(.75f, .75f, .75f, 1)) * (enableForce ? 1 : .25f);
+
+        Gizmos.DrawLine(Vector3.down, Vector3.up);
+        Gizmos.DrawLine(Vector3.right, Vector3.left);
+        Gizmos.DrawLine(Vector3.forward, Vector3.back);
     }
 
-    // needs to wait a frame before adding to channel because force manager might not have run first
-    private void OnEnable()
+    protected virtual void OnEnable()
     {
-        if (Application.isPlaying)
+        forceManagerSO = ForcesStaticMembers.forceManagerSO;
+        if (forceManagerSO != null)
         {
-            forceProducerEventsChannel = ForcesStaticMembers.forceProducerEventsChannel;
-            StartCoroutine(AddEventWait());
+            forceManagerSO.AddForceProducer(this);
         }
     }
 
-    private IEnumerator AddEventWait()
+    protected virtual void OnDisable()
     {
-        yield return new WaitForEndOfFrame();
-        if ((forceProducerEventsChannel != null) && enableForce)
+        if (forceManagerSO != null)
         {
-            forceProducerEventsChannel.RaiseAddEvent(this);
-        }
-    }
-    
-    private void OnDisable()
-    {
-        if (Application.isPlaying)
-        {
-            if ((forceProducerEventsChannel != null) && enableForce)
-            {
-                forceProducerEventsChannel.RaiseRemoveEvent(this);
-            }
+            forceManagerSO.RemoveForceProducer(this);
         }
     }
 
-    // called from Awake 
-    public virtual void Initialize()
-    {
-        //prevents this from being added to objects
-        this.hideFlags = HideFlags.HideAndDontSave | HideFlags.HideInInspector;
-        Debug.LogError("Use \"ForceZone\", \"ForceSurface\", or \"ForcePoint\" instead of \"ForceSource\"!", gameObject);
-        Debug.LogWarning("Destroyed \"ForceSource\" Component", gameObject);
-        DestroyImmediate(this);
-    }
-
-    public void EnableForce(bool enabled)
+    public virtual void EnableForce(bool enabled)
     {
         enableForce = enabled;
     }
 
     // these next two functions should be overridden by child classes
-
     //returns the gravity vector at this point regardless of range
     public virtual Vector3 ForceVector(Vector3 point)
     {
-        return Vector3.zero;
+        return (transform.position - point).normalized * forceStrength;
     }
 
     //returns where in the falloff gradient the point is
@@ -95,8 +100,7 @@ public class ForceProducer : MonoBehaviour
     //1 means teh point is completely covered   
     public virtual Vector3 ForceVector(Vector3 point, out float strength)
     {
-        //don't calculate gravity vector if strength is 0
-        strength = 0;
-        return Vector3.zero;
+        strength = 1;
+        return (transform.position - point).normalized * forceStrength;
     }
 }

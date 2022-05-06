@@ -6,31 +6,22 @@ using UnityEditor;
 
 public static class ForcesStaticMembers
 {
-    private static string forceProducerEventsChannleSOName = "ForceProducerEventsChannelSO.asset";
-    private static string forceReceiverEventsChannleSOName = "ForceReceiverEventsChannelSO.asset";
+    private static string forceManagerSOName = "ForceManagerSO.asset";
     private static string packageName = "com.weston-wright.forces-and-gravity";
     private static string scriptableObjectsPath = "/Runtime/Scriptable Objects/";
 
-    public static ForceProducerEventsChannelSO forceProducerEventsChannel;
-    public static ForceReceiverEventsChannelSO forceReceiverEventsChannel;
+    public static ForceManagerSO forceManagerSO;
 
     public static int forceTypeCount;
 
     static ForcesStaticMembers()
     {
         string dataPath = GetDataPath();
-        forceProducerEventsChannel = (ForceProducerEventsChannelSO)AssetDatabase.LoadAssetAtPath(dataPath + packageName + scriptableObjectsPath + forceProducerEventsChannleSOName, typeof(ForceProducerEventsChannelSO)); ;
-        if (forceProducerEventsChannel == null)
+        forceManagerSO = (ForceManagerSO)AssetDatabase.LoadAssetAtPath(dataPath + packageName + scriptableObjectsPath + forceManagerSOName, typeof(ForceManagerSO));
+        if (forceManagerSO == null)
         {
-            Debug.LogError("Missing Scriptable Object " + forceProducerEventsChannleSOName + "! Package may be corrupted !");
+            Debug.LogError("Missing Scriptable Object " + forceManagerSOName + "! Package may be corrupted !");
         }
-
-        forceReceiverEventsChannel = (ForceReceiverEventsChannelSO)AssetDatabase.LoadAssetAtPath(dataPath + packageName + scriptableObjectsPath + forceReceiverEventsChannleSOName, typeof(ForceReceiverEventsChannelSO)); ;
-        if (forceReceiverEventsChannel == null)
-        {
-            Debug.LogError("Missing Scriptable Object " + forceReceiverEventsChannleSOName + "! Package may be corrupted!");
-        }
-
         forceTypeCount = Enum.GetNames(typeof(ForceType)).Length;
     }
 

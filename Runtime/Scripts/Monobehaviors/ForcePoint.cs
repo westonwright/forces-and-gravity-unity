@@ -8,7 +8,7 @@ public class ForcePoint : ForceProducer
     [Tooltip("The distance it takes for the force to fade")]
     protected float falloffRange = 0f;
 
-    private void OnDrawGizmos()
+    protected override void OnDrawGizmos()
     {
         if (preview)
         {
@@ -42,11 +42,6 @@ public class ForcePoint : ForceProducer
                 Gizmos.DrawWireSphere(transform.position, ForcesStaticMembers.VectorMax(transform.localScale) + falloffRange);
             }
         }
-    }
-
-    // called from Awake 
-    public override void Initialize()
-    {
     }
 
     public override Vector3 ForceVector(Vector3 point, out float strength)
