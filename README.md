@@ -3,6 +3,11 @@
 This package gives you the ability to apply custom forces and gravity
 to objects in your scene based on arbitrary meshes, zones, and points.
 
+## Links
+[twitter](https://twitter.com/WestonWright_)
+
+[github](https://github.com/westonwright)
+
 ## Installation
 To install this package, add [package](https://github.com/westonwright/forces-and-gravity-unity.git) from git URL in Unity's package manager
 
@@ -102,11 +107,6 @@ If using a mesh for a **Force Surface**, it must be from a **mesh collider**, no
 **Force Surfaces** provide better results with meshes that have **smoothed normals**. If you are using the same mesh for collision as your display mesh and it doesn't have smoothed normals, it might be better to make two versions of the mesh with different normals.
 
 Be careful of priority when using the **Force Global** provider. It is recommended that you **set the priority to 0** on global providers. Default priority for all providers is set to 1 (the highest option), which means it could overwrite all other colliders in the scene. 
-
-## Contributing
-Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
-
-Please make sure to update tests as appropriate.
 
 ## Code Examples
 
@@ -230,6 +230,8 @@ public class ForceDetectorExample : MonoBehaviour
     }
 }
 ```
+## Contributing
+Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
 
 ## Roadmap
 * Complete Documentation.
@@ -237,7 +239,3 @@ public class ForceDetectorExample : MonoBehaviour
 
 ## License
 [MIT](https://choosealicense.com/licenses/mit/)
-
-## Links
-[twitter](https://twitter.com/WestonWright_)
-[github](https://github.com/westonwright)
