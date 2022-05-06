@@ -36,7 +36,7 @@ public class ForceZone : ForceProducer
                 case ForceType.Impulse:
                     Gizmos.color = new Color(1, 1, 0, 1);
                     break;
-                case ForceType.VelocityChang:
+                case ForceType.VelocityChange:
                     Gizmos.color = new Color(.5f, 1, 0, 1);
                     break;
                 case ForceType.Gravity:

@@ -49,7 +49,7 @@ public class ForceRigidbody : MonoBehaviour
                         case ForceType.Impulse:
                             rb.AddForce(forceVectors[i], ForceMode.Impulse);
                             break;
-                        case ForceType.VelocityChang:
+                        case ForceType.VelocityChange:
                             rb.AddForce(forceVectors[i], ForceMode.VelocityChange);
                             break;
                         case ForceType.Gravity:
