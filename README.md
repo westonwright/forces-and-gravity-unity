@@ -6,8 +6,6 @@ to objects in your scene based on arbitrary meshes, zones, and points.
 ## Installation
 To install this package, add [package](https://github.com/westonwright/forces-and-gravity-unity.git) from git URL in Unity's package manager
 
-### 
-
 ## Features
 ### Force Producers
 *Force Producers* calculate the force applied to a point in space depending on the type of producer.  
@@ -47,7 +45,7 @@ Currently, there are 5 types of Producers:
 #### Force Producer  
 This is the base class of all other force producers. All it does is pull objects towards its origin from any distance.
 
-![Force Surface Screenshot](https://drive.google.com/uc?export=view&id=1U76GsJSwFsdjoPuv7OhXRCz8E9zZTsl7) 
+![Force Producer Screenshot](https://drive.google.com/uc?export=view&id=1PCd06BM7QZXUqLldnfJyySbLd7OvaXIN) 
 
 #### Force Surface  
 Creates forces based on a mesh from a mesh collider or any other default collider shape. Force is determined by the distance from the surface and normal data from the mesh/collider.
@@ -190,6 +188,7 @@ public class ForceDetectorExample : MonoBehaviour
     
     private void Update()
     {
+        // we need to make sure forceManagerSO is not null
         if(forceManagerSO != null)
         {
             // ForceManagerSO has multiple functions you can use to get information about
