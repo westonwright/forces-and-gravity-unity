@@ -45,7 +45,7 @@ These producers have multiple shared variables:
 Currently, there are 4 types of Producers:
 
 ***Force Surface***  
-Creates forces based on a mesh from a mesh collider. Force is determined by the distance from the surface and normal data from the mesh.
+Creates forces based on a mesh from a mesh collider or any other default collider shape. Force is determined by the distance from the surface and normal data from the mesh/collider.
 
 ![Force Surface Screenshot](https://drive.google.com/uc?export=view&id=1U76GsJSwFsdjoPuv7OhXRCz8E9zZTsl7) 
 
