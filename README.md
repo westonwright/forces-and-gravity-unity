@@ -45,9 +45,10 @@ These producers have multiple shared variables:
 Currently, there are 4 types of Producers:
 
 ***Force Surface***  
-Creates forces based on a mesh from a mesh collider. Force is determined by the distance from the surface and normal data from the mesh.
+Creates forces based on a mesh from a mesh collider or any other default collider shape. Force is determined by the distance from the surface and normal data from the mesh/collider.
 
 ![Force Surface Screenshot](https://drive.google.com/uc?export=view&id=1U76GsJSwFsdjoPuv7OhXRCz8E9zZTsl7) 
+
 Unique Variables:  
 - *Force Range*
   > Determines how far from the surface of the mesh the full strength force will reach.
@@ -55,6 +56,7 @@ Unique Variables:
 Creates a force in one direction within a bounding box.
 
 ![Force Zone Screenshot](https://drive.google.com/uc?export=view&id=1IGFyb28UckiMKOhU0cgOsxE7sJcpIBSA) 
+
 Unique Variables:  
 - *Force Direction*
   > The direction in which force will be applied within this zone. Normalized at runtime. 
@@ -66,7 +68,9 @@ Creates spherical forces based on distance from a point in space. The inner rang
 Creates a force in one direction for the entire scene.
 
 ![Force Global Screenshot](https://drive.google.com/uc?export=view&id=1MmDqgKgHV_Py-xWy5ZM2K9cii6MSDaCe) 
+
 (very good gif)  
+
 Unique Variables:  
 - *Force Direction*
   > The direction in which force will be applied within this zone. Normalized at runtime.  
@@ -101,6 +105,43 @@ Be careful of priority when using the **Force Global** provider. It is recommend
 Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
 
 Please make sure to update tests as appropriate.
+
+## Code Examples
+```c#
+// must inherit from ForceProducer
+public class ExampleForceProducer : ForceProducer
+{
+    // you can also declare any custom variables or methods
+
+    // must call Initialize even if not using it
+    // used in parent class to prevent attaching it to a game object
+    // called from Awake()
+    public override void Initialize()
+    {
+    }
+
+    // called from ForceManager
+    // return force vector for provided point. Use whatever calculation you want
+    // set strength for weighted mixin
+    // if strength is 0, the force will have no effect
+    // if strength is 1, the force will completely saturate the weighted mixing
+    // in other force producers, strength is determined by falloff
+    public override Vector3 ForceVector(Vector3 point, out float strength)
+    {
+        strength = 1;
+        // this would just move the point further from the world origin
+        return point.normalized * forceStrength;
+    }
+
+    // returns the full gravity vector regardless of if the point is in the collider or not
+    // not currently called by anything
+    // will usually be the same calculation as function above but without strength
+    public override Vector3 ForceVector(Vector3 point)
+    {
+        return forceDirection.normalized * forceStrength;
+    }
+}
+```
 
 ## Roadmap
 * Complete Documentation.
