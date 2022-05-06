@@ -48,6 +48,7 @@ Currently, there are 4 types of Producers:
 Creates forces based on a mesh from a mesh collider. Force is determined by the distance from the surface and normal data from the mesh.
 
 ![Force Surface Screenshot](https://drive.google.com/uc?export=view&id=1U76GsJSwFsdjoPuv7OhXRCz8E9zZTsl7) 
+
 Unique Variables:  
 - *Force Range*
   > Determines how far from the surface of the mesh the full strength force will reach.
@@ -55,6 +56,7 @@ Unique Variables:
 Creates a force in one direction within a bounding box.
 
 ![Force Zone Screenshot](https://drive.google.com/uc?export=view&id=1IGFyb28UckiMKOhU0cgOsxE7sJcpIBSA) 
+
 Unique Variables:  
 - *Force Direction*
   > The direction in which force will be applied within this zone. Normalized at runtime. 
@@ -66,7 +68,9 @@ Creates spherical forces based on distance from a point in space. The inner rang
 Creates a force in one direction for the entire scene.
 
 ![Force Global Screenshot](https://drive.google.com/uc?export=view&id=1MmDqgKgHV_Py-xWy5ZM2K9cii6MSDaCe) 
+
 (very good gif)  
+
 Unique Variables:  
 - *Force Direction*
   > The direction in which force will be applied within this zone. Normalized at runtime.  
