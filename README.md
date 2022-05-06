@@ -11,14 +11,6 @@ Theres a lot of information there like:
 * [Documentation](https://github.com/westonwright/forces-and-gravity-unity/wiki/Documentation)
 * [Roadmap](https://github.com/westonwright/forces-and-gravity-unity/wiki/Roadmap)
 
-## Follow My Stuff :)
-[twitter](https://twitter.com/WestonWright_)
-
-[github](https://github.com/westonwright)
-
-## [Features](https://github.com/westonwright/forces-and-gravity-unity/wiki/Features)
-are on the [Wiki](https://github.com/westonwright/forces-and-gravity-unity/wiki) :)
-
 ## Supported Versions
 Unity 2017 and up
 
@@ -32,6 +24,13 @@ To install this package, add [package](https://github.com/westonwright/forces-an
 4. Check [Tips](https://github.com/westonwright/forces-and-gravity-unity/wiki/Tips) for additional setup help!
 5. Check [Code Examples](https://github.com/westonwright/forces-and-gravity-unity/wiki/Code-Examples) for more advanced help
 6. Check [Documentation](https://github.com/westonwright/forces-and-gravity-unity/wiki/Documentation) for specific descriptions
+
+## Follow My Stuff :)
+Nice to meet ya I'm Weston! Thanks for taking a look at my work
+
+* [twitter](https://twitter.com/WestonWright_)
+
+* [github](https://github.com/westonwright)
 
 ## Contributing
 Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
