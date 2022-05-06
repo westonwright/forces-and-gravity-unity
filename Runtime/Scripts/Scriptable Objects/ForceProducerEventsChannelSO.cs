@@ -4,29 +4,29 @@ using UnityEngine;
 using UnityEngine.Events;
 
 //[CreateAssetMenu(fileName = "LoadEventsChannel", menuName = "Events/Load Event Channel")]
-public class GravitySourceEventsChannelSO : ScriptableObject
+public class ForceProducerEventsChannelSO : ScriptableObject
 {
-	public UnityAction<GravitySource> OnAddGravitySourceRequested;
-	public void RaiseAddEvent(GravitySource gravitySource)
+	public UnityAction<ForceProducer> OnAddForceProducerRequested;
+	public void RaiseAddEvent(ForceProducer forceProducer)
 	{
-		if (OnAddGravitySourceRequested != null)
+		if (OnAddForceProducerRequested != null)
 		{
-			OnAddGravitySourceRequested.Invoke(gravitySource);
+			OnAddForceProducerRequested.Invoke(forceProducer);
 		}
 		else
 		{
-			Debug.LogWarning("Adding a Gravity Source was requested but nobody picked it up. " +
+			Debug.LogWarning("Adding a Force Producer was requested but nobody picked it up. " +
 				"Check why there is no GravityManager already present, " +
 				"and make sure it's listening on this Add Gravity Source Channel.");
 		}
 	}
 	
-	public UnityAction<GravitySource> OnRemoveGravitySourceRequested;
-	public void RaiseRemoveEvent(GravitySource gravitySource)
+	public UnityAction<ForceProducer> OnRemoveForceProducerRequested;
+	public void RaiseRemoveEvent(ForceProducer forceProducer)
 	{
-		if (OnRemoveGravitySourceRequested != null)
+		if (OnRemoveForceProducerRequested != null)
 		{
-			OnRemoveGravitySourceRequested.Invoke(gravitySource);
+			OnRemoveForceProducerRequested.Invoke(forceProducer);
 		}
 		else
 		{

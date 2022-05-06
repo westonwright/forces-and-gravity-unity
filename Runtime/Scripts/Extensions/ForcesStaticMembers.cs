@@ -4,32 +4,34 @@ using UnityEngine;
 using System;
 using UnityEditor;
 
-public static class CustomGravityHelperFunctions
+public static class ForcesStaticMembers
 {
-    private static string _gravitySourceEventsChannleSOName = "GravitySourceEventsChannelSO.asset";
-    private static string _applyGravityEventsChannleSOName = "ApplyGravityEventsChannelSO.asset";
-    //private static string _packageName = "com.weston-wright.custom-gravity";
-    private static string _packageName = "com.weston-wright.custom-gravity-unity";
-    private static string _scriptableObjectsPath = "/Runtime/Scriptable Objects/";
+    private static string forceProducerEventsChannleSOName = "ForceProducerEventsChannelSO.asset";
+    private static string forceReceiverEventsChannleSOName = "ForceReceiverEventsChannelSO.asset";
+    private static string packageName = "com.weston-wright.forces-and-gravity";
+    private static string scriptableObjectsPath = "/Runtime/Scriptable Objects/";
 
-    public static GravitySourceEventsChannelSO _gravitySourceEventsChannel;
-    public static ApplyGravityEventsChannelSO _applyGravityEventsChannel;
-    static CustomGravityHelperFunctions()
+    public static ForceProducerEventsChannelSO forceProducerEventsChannel;
+    public static ForceReceiverEventsChannelSO forceReceiverEventsChannel;
+
+    public static int forceTypeCount;
+
+    static ForcesStaticMembers()
     {
         string dataPath = GetDataPath();
-        _gravitySourceEventsChannel = (GravitySourceEventsChannelSO)AssetDatabase.LoadAssetAtPath(dataPath + _packageName + _scriptableObjectsPath + _gravitySourceEventsChannleSOName, typeof(GravitySourceEventsChannelSO)); ;
-        if (_gravitySourceEventsChannel == null)
+        forceProducerEventsChannel = (ForceProducerEventsChannelSO)AssetDatabase.LoadAssetAtPath(dataPath + packageName + scriptableObjectsPath + forceProducerEventsChannleSOName, typeof(ForceProducerEventsChannelSO)); ;
+        if (forceProducerEventsChannel == null)
         {
-            Debug.LogError("Missing Scriptable Object " + _gravitySourceEventsChannleSOName + "! Package may be corrupted!");
-            Debug.LogError("Please reimport Package");
+            Debug.LogError("Missing Scriptable Object " + forceProducerEventsChannleSOName + "! Package may be corrupted !");
         }
 
-        _applyGravityEventsChannel = (ApplyGravityEventsChannelSO)AssetDatabase.LoadAssetAtPath(dataPath + _packageName + _scriptableObjectsPath + _applyGravityEventsChannleSOName, typeof(ApplyGravityEventsChannelSO)); ;
-        if (_applyGravityEventsChannel == null)
+        forceReceiverEventsChannel = (ForceReceiverEventsChannelSO)AssetDatabase.LoadAssetAtPath(dataPath + packageName + scriptableObjectsPath + forceReceiverEventsChannleSOName, typeof(ForceReceiverEventsChannelSO)); ;
+        if (forceReceiverEventsChannel == null)
         {
-            Debug.LogError("Missing Scriptable Object " + _applyGravityEventsChannleSOName + "! Package may be corrupted!");
-            Debug.LogError("Please reimport Package");
+            Debug.LogError("Missing Scriptable Object " + forceReceiverEventsChannleSOName + "! Package may be corrupted!");
         }
+
+        forceTypeCount = Enum.GetNames(typeof(ForceType)).Length;
     }
 
     private static string GetDataPath()
@@ -52,25 +54,10 @@ public static class CustomGravityHelperFunctions
 #endif  
         return dataPath;
     }
-    /*
-    public static bool LoadGravitySourceEventsChannelObject(ref GravitySourceEventsChannelSO soRefrence)
-    {
-        //Debug.Log(_dataPath + _packageName + filePath + fileName);
-        //Debug.Log(GetDataPath() + _packageName + _scriptableObjectsPath + _gravitySourceEventsChannleSOName);
-        soRefrence = (GravitySourceEventsChannelSO)AssetDatabase.LoadAssetAtPath(GetDataPath() + _packageName + _scriptableObjectsPath + _gravitySourceEventsChannleSOName, typeof(GravitySourceEventsChannelSO));
-        if (soRefrence == null)
-        {
-            Debug.LogError("Missing Scriptable Object " + _gravitySourceEventsChannleSOName + "! Package may be corrupted!");
-            Debug.LogError("Please reimport Package");
-            return false;
-        }
-        return true;
-    }
-    */
 
     public static Vector3 SmoothedNormalVector(Vector3 nearestPt, Vector3 A, Vector3 B, Vector3 C, Vector3 N0, Vector3 N1, Vector3 N2, Transform transform)
     {
-        Vector3 bary = CustomGravityHelperFunctions.Barycentric(nearestPt, A, B, C);
+        Vector3 bary = ForcesStaticMembers.Barycentric(nearestPt, A, B, C);
         Vector3 normal = (bary.x * N0 + bary.y * N1 + bary.z * N2).normalized;
         return transform.TransformDirection(normal);
     }
@@ -168,7 +155,7 @@ public static class CustomGravityHelperFunctions
         return new Vector3(u, v, w);
     }
 
-    public static void GravityCompositeStraight(float alphaA, float alphaB, Vector3 vectorA, Vector3 vectorB, out float alpha, out Vector3 color)
+    public static void VectorCompositeStraight(float alphaA, float alphaB, Vector3 vectorA, Vector3 vectorB, out float alpha, out Vector3 color)
     {
         alpha = alphaA + (alphaB * (1 - alphaA));
         color = ((vectorA * alphaA) + ((vectorB * alphaB) * (1 - alphaA))) / alpha;

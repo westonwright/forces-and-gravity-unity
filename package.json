@@ -1,15 +1,20 @@
 {
-  "name": "com.weston-wright.custom-gravity-unity",
-  "description": "This package allows for custom gravity from arbitrary shapes, meshes, and zones",
-  "version": "1.1.0",
+  "name": "com.weston-wright.forces-and-gravity",
+  "description": "This package allows for custom forces and gravity from arbitrary meshes, points, and zones",
+  "version": "1.2.0",
   "unity": "2020.3",
   "unityRelease": "26f1",
-  "displayName": "Custom Gravity",
+  "displayName": "Forces and Gravity",
   "dependencies": {},
   "keywords": [
     "gravity",
     "zone",
-    "custom"
+    "custom",
+    "force",
+    "forces",
+    "acceleration",
+    "attract",
+    "mesh",
   ],
   "type": "sample",
   "hideInEditor": false

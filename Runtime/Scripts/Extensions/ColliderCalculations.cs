@@ -217,7 +217,7 @@ public static class ColliderCalculations
                     Vector3 b = verts[tris[triOff + 1]];
                     Vector3 c = verts[tris[triOff + 2]];
 
-                    CustomGravityHelperFunctions.ClosestPointOnTriangleToPoint(ref to, ref a, ref b, ref c, out possNearestPt);
+                    ForcesStaticMembers.ClosestPointOnTriangleToPoint(ref to, ref a, ref b, ref c, out possNearestPt);
                     float possNearestSqDist = (to - possNearestPt).sqrMagnitude;
 
                     if (possNearestSqDist < nearestSqDist)
@@ -233,7 +233,7 @@ public static class ColliderCalculations
                 }
             }
             //set normal vector for gravity
-            normal = CustomGravityHelperFunctions.SmoothedNormalVector(nearestPt, A, B, C, norms[tris[T]], norms[tris[T + 1]], norms[tris[T + 2]], ct);
+            normal = ForcesStaticMembers.SmoothedNormalVector(nearestPt, A, B, C, norms[tris[T]], norms[tris[T + 1]], norms[tris[T + 2]], ct);
 
             return ct.TransformPoint(nearestPt);
         }
@@ -336,7 +336,7 @@ public static class ColliderCalculations
 
                 Vector3 nearest;
 
-                CustomGravityHelperFunctions.ClosestPointOnTriangleToPoint(ref a, ref d, ref c, ref local, out nearest);
+                ForcesStaticMembers.ClosestPointOnTriangleToPoint(ref a, ref d, ref c, ref local, out nearest);
 
                 float distance = (local - nearest).sqrMagnitude;
 
@@ -347,7 +347,7 @@ public static class ColliderCalculations
                 }
 
                 // check if calculating this twice is necessary
-                CustomGravityHelperFunctions.ClosestPointOnTriangleToPoint(ref a, ref b, ref d, ref local, out nearest);
+                ForcesStaticMembers.ClosestPointOnTriangleToPoint(ref a, ref b, ref d, ref local, out nearest);
 
                 distance = (local - nearest).sqrMagnitude;
 

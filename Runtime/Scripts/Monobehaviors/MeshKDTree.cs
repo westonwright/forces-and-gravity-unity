@@ -59,7 +59,7 @@ public class MeshKDTree : MonoBehaviour
                 Vector3 b = verts[tris[triOff + 1]];
                 Vector3 c = verts[tris[triOff + 2]];
 
-                CustomGravityHelperFunctions.ClosestPointOnTriangleToPoint(ref pt, ref a, ref b, ref c, out possNearestPt);
+                ForcesStaticMembers.ClosestPointOnTriangleToPoint(ref pt, ref a, ref b, ref c, out possNearestPt);
                 float possNearestSqDist = (pt - possNearestPt).sqrMagnitude;
 
                 if (possNearestSqDist < nearestSqDist)
@@ -75,7 +75,7 @@ public class MeshKDTree : MonoBehaviour
             }
         }
         //set normal vector for gravity
-        normal = CustomGravityHelperFunctions.SmoothedNormalVector(nearestPt, A, B, C, norms[tris[T]], norms[tris[T + 1]], norms[tris[T + 2]], transform);
+        normal = ForcesStaticMembers.SmoothedNormalVector(nearestPt, A, B, C, norms[tris[T]], norms[tris[T + 1]], norms[tris[T + 2]], transform);
 
         return nearestPt;
     }
