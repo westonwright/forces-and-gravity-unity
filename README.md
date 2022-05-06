@@ -130,7 +130,7 @@ public class ForceProducerExample : ForceProducer
     // this Force Producer to the ForceManagerSO manually!
     // this is what that process looks like:
     /*
-    protected virtual void OnEnable()
+    protected override void OnEnable()
     {
         forceManagerSO = ForcesStaticMembers.forceManagerSO;
         if (forceManagerSO != null)
@@ -139,7 +139,7 @@ public class ForceProducerExample : ForceProducer
         }
     }
 
-    protected virtual void OnDisable()
+    protected override void OnDisable()
     {
         if (forceManagerSO != null)
         {
