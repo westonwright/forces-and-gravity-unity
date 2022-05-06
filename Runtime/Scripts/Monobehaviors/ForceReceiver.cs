@@ -73,8 +73,11 @@ public class ForceReceiver : MonoBehaviour
             case ForceType.VelocityChang:
                 rb.AddForce(totalVector, ForceMode.VelocityChange);
                 break;
-            case ForceType.Generic:
+            case ForceType.Gravity:
                 rb.AddForce(totalVector, ForceMode.Acceleration);
+                break;
+            case ForceType.Generic:
+                rb.AddForce(totalVector, ForceMode.Force);
                 break;
         }
     }

@@ -28,7 +28,7 @@ public class ForceZone : ForceProducer
             switch (forceType)
             {
                 case ForceType.Force:
-                    Gizmos.color = Color.red;
+                    Gizmos.color = new Color(1, 0, 0, 1);
                     break;
                 case ForceType.Acceleration:
                     Gizmos.color = new Color(1, .5f, 0, 1);
@@ -39,8 +39,11 @@ public class ForceZone : ForceProducer
                 case ForceType.VelocityChang:
                     Gizmos.color = new Color(.5f, 1, 0, 1);
                     break;
-                case ForceType.Generic:
+                case ForceType.Gravity:
                     Gizmos.color = new Color(0, 1, 0, 1);
+                    break;
+                case ForceType.Generic:
+                    Gizmos.color = new Color(0, 1, .5f, 1);
                     break;
             }
             Gizmos.color = (additive ? Gizmos.color : Gizmos.color * new Color(.75f, .75f, .75f, 1)) * (enableForce ? 1 : .25f);

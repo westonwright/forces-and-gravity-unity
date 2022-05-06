@@ -4,5 +4,6 @@ public enum ForceType
     Acceleration = 1,
     Impulse = 2,
     VelocityChang = 3,
-    Generic = 4 // generic is not linked with a defined behavior but is to be defined in scripts
+    Gravity = 4, // gravity is essentially the same as acceleration but operates by itself
+    Generic = 5 // generic is not linked with a defined behavior but is to be defined in scripts
 }
