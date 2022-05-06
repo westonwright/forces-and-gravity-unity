@@ -42,9 +42,14 @@ These producers have multiple shared variables:
 - *Falloff Range*
   > Determines how far out falloff reaches. Falloff creates a smooth transition from full-strength to 0-strength from the producer based on distance.
 
-Currently, there are 4 types of Producers:
+Currently, there are 5 types of Producers:
 
-***Force Surface***  
+#### Force Producer  
+This is the base class of all other force producers. All it does is pull objects towards its origin from any distance.
+
+![Force Surface Screenshot](https://drive.google.com/uc?export=view&id=1U76GsJSwFsdjoPuv7OhXRCz8E9zZTsl7) 
+
+#### Force Surface  
 Creates forces based on a mesh from a mesh collider or any other default collider shape. Force is determined by the distance from the surface and normal data from the mesh/collider.
 
 ![Force Surface Screenshot](https://drive.google.com/uc?export=view&id=1U76GsJSwFsdjoPuv7OhXRCz8E9zZTsl7) 
@@ -61,7 +66,7 @@ Unique Variables:
 - *Force Direction*
   > The direction in which force will be applied within this zone. Normalized at runtime. 
 #### Force Point
-Creates spherical forces based on distance from a point in space. The inner range is determined by scale.
+Does essentially the same this as Force Producer but with an inner radius and falloff. Creates spherical forces based on distance from a point in space. The inner range is determined by scale.
 
 ![Force Point Screenshot](https://drive.google.com/uc?export=view&id=1Kh_1rVQsLDGgmdnEX3hI-bGeKaMb61pc) 
 #### Force Global
@@ -87,10 +92,9 @@ Variables:
 
 ## Setup
 There are a few steps to get custom forces working:
-1. Add a Gravity Manager to the scene. Forces will not work without a Gravity Manager.
-2. Add one of the Force Producers to the scene. Do not use the base Force Producer class.
-3. Add a Force Receiver to a rigidbody in the scene.
-4. Press play!
+1. Add one of the Force Producers to the scene. I'd recommend starting with a Force Global but be sure to read the Tips!
+2. Add a Force Receiver to a rigidbody in the scene. (or use a custom script you've created)
+3. Press play!
 
 ## Tips
 If using a mesh for a **Force Surface**, it must be from a **mesh collider**, not from any other mesh component.
@@ -120,8 +124,29 @@ public class ForceProducerExample : ForceProducer
     // you can declare any custom variables or methods
     // consider adding some Gizmos to make it more clear what your ForceProducer is doing
     
+    // adding and removing this Force Producer to the ForceManagerSO is critical!
+    // the base Force Producer class does this for us in OnEnable and OnDisable
     // if you override OnEnable or OnDisable you must add 
     // this Force Producer to the ForceManagerSO manually!
+    // this is what that process looks like:
+    /*
+    protected virtual void OnEnable()
+    {
+        forceManagerSO = ForcesStaticMembers.forceManagerSO;
+        if (forceManagerSO != null)
+        {
+            forceManagerSO.AddForceProducer(this);
+        }
+    }
+
+    protected virtual void OnDisable()
+    {
+        if (forceManagerSO != null)
+        {
+            forceManagerSO.RemoveForceProducer(this);
+        }
+    }
+    */
 
     // called from ForceManager
     // return force vector for provided point. Use whatever calculation you want
