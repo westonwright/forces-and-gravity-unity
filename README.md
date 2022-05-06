@@ -1,7 +1,8 @@
 # Custom Forces and Gravity for Unity
 
-This package gives you the ability to apply custom forces and gravity
-to objects in your scene based on arbitrary meshes, zones, and points.
+This package gives you the ability to apply custom forces and gravity to objects in your scene based on arbitrary meshes, zones, and points. All of these components work together and can mix additively or with priority. It should also be easy to create additional custom components to fit your needs. 
+
+Basically this mean you can walk on a sphere... or a donut! Or fling things off into space! Or crush everything to a single point! 
 
 ## Check the [Wiki](https://github.com/westonwright/forces-and-gravity-unity/wiki)!
 Theres a lot of information there like:
