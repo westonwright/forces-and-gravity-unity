@@ -14,7 +14,7 @@
     "forces",
     "acceleration",
     "attract",
-    "mesh",
+    "mesh"
   ],
   "type": "sample",
   "hideInEditor": false
