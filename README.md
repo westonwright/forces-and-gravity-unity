@@ -3,7 +3,7 @@
 This package gives you the ability to apply custom forces and gravity
 to objects in your scene based on arbitrary meshes, zones, and points.
 
-## Links
+## Links :)
 [twitter](https://twitter.com/WestonWright_)
 
 [github](https://github.com/westonwright)
