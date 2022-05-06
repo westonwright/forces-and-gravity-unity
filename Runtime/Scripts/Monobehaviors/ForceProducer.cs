@@ -32,7 +32,7 @@ public class ForceProducer : MonoBehaviour
     public bool invert = false;
 
     // broadcasts to
-    private ForceManagerSO forceManagerSO;
+    protected ForceManagerSO forceManagerSO;
 
     protected virtual void OnDrawGizmos()
     {
