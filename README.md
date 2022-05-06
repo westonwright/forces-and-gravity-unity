@@ -106,6 +106,40 @@ Pull requests are welcome. For major changes, please open an issue first to disc
 
 Please make sure to update tests as appropriate.
 
+## Code Examples
+```c#
+public class ExampleForceProducer : ForceProducer
+{
+    // must call Initialize even if not using it
+    // used in parent class to prevent using it
+    // called from Awake()
+    public override void Initialize()
+    {
+    }
+
+    // called from ForceManager
+    // return force vector for provided point. Use whatever calculation you want
+    // set strength for weighted mixin
+    // if strength is 0, the force will have no effect
+    // if strength is 1, the force will completely saturate the weighted mixing
+    // in other force producers, strength is determined by falloff
+    public override Vector3 ForceVector(Vector3 point, out float strength)
+    {
+        strength = 1;
+        // this would just move the point further from the world origin
+        return point.normalized * forceStrength;
+    }
+
+    // returns the full gravity vector regardless of if the point is in the collider or not
+    // not currently called by anything
+    // will usually be the same calculation as function above but without strength
+    public override Vector3 ForceVector(Vector3 point)
+    {
+        return forceDirection.normalized * forceStrength;
+    }
+}
+```
+
 ## Roadmap
 * Complete Documentation.
 * Better guidance on creating custom classes from the system.
