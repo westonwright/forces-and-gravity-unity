@@ -19,8 +19,8 @@ Unity 2017 and up
 To install this package, add [package](https://github.com/westonwright/forces-and-gravity-unity.git) from git URL in Unity's package manager
 
 ## Setup
-1. Add one of the Force Producers to the scene. I'd recommend starting with a Force Global but be sure to read the Tips!
-2. Add a Force Receiver to a rigidbody in the scene. (or use a custom script you've created)
+1. Add one of the Force Producers to the scene. I'd recommend starting with a Force Global but be sure to read the [Tips](https://github.com/westonwright/forces-and-gravity-unity/wiki/Tips)!
+2. Add a Force Receiver to a rigidbody in the scene. ([or use a custom script you've created](https://github.com/westonwright/forces-and-gravity-unity/wiki/Code-Examples))
 3. Press play!
 4. Check [Tips](https://github.com/westonwright/forces-and-gravity-unity/wiki/Tips) for additional setup help!
 5. Check [Code Examples](https://github.com/westonwright/forces-and-gravity-unity/wiki/Code-Examples) for more advanced help
