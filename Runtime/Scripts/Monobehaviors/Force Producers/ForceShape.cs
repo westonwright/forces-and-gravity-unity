@@ -41,11 +41,14 @@ public class ForceShape : ForceProducer
                 case ForceType.VelocityChange:
                     Gizmos.color = new Color(.5f, 1, 0, 1);
                     break;
-                case ForceType.Gravity:
+                case ForceType.Wind:
                     Gizmos.color = new Color(0, 1, 0, 1);
                     break;
-                case ForceType.Generic:
+                case ForceType.Gravity:
                     Gizmos.color = new Color(0, 1, .5f, 1);
+                    break;
+                case ForceType.Generic:
+                    Gizmos.color = new Color(0, 1, 1, 1);
                     break;
             }
             Gizmos.color = (additive ? Gizmos.color : Gizmos.color * ForcesStaticMembers.lightGray) * (enableForce ? 1 : .25f);

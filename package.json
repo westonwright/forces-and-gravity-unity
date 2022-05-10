@@ -1,7 +1,7 @@
 {
   "name": "com.weston-wright.forces-and-gravity",
   "description": "This package allows for custom forces and gravity from arbitrary meshes, points, and zones",
-  "version": "1.5.0",
+  "version": "1.5.2",
   "unity": "2017.4",
   "unityRelease": "31f1",
   "displayName": "Forces and Gravity",

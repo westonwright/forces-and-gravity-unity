@@ -19,7 +19,7 @@ public class ForceZone : ForceProducer
     private Bounds zoneBounds;
     private Bounds falloffBounds;
 
-    private BoxShape zoneCube;
+    private BoxShape zoneBox;
     protected override void OnDrawGizmos()
     {
         if (preview)
@@ -40,11 +40,14 @@ public class ForceZone : ForceProducer
                 case ForceType.VelocityChange:
                     Gizmos.color = new Color(.5f, 1, 0, 1);
                     break;
-                case ForceType.Gravity:
+                case ForceType.Wind:
                     Gizmos.color = new Color(0, 1, 0, 1);
                     break;
-                case ForceType.Generic:
+                case ForceType.Gravity:
                     Gizmos.color = new Color(0, 1, .5f, 1);
+                    break;
+                case ForceType.Generic:
+                    Gizmos.color = new Color(0, 1, 1, 1);
                     break;
             }
             Gizmos.color = (additive ? Gizmos.color : Gizmos.color * ForcesStaticMembers.lightGray) * (enableForce ? 1 : .25f);
@@ -80,7 +83,7 @@ public class ForceZone : ForceProducer
 
     private void Awake()
     {
-        zoneCube = GetComponent<BoxShape>();
+        zoneBox = GetComponent<BoxShape>();
 
         UpdateBounds();
     }
@@ -120,7 +123,7 @@ public class ForceZone : ForceProducer
 
     public void UpdateBounds()
     {
-        zoneBounds = new Bounds(ForcesStaticMembers.MultiplyVectors(transform.localScale, zoneCube.center), ForcesStaticMembers.MultiplyVectors(transform.localScale, zoneCube.size));
+        zoneBounds = new Bounds(ForcesStaticMembers.MultiplyVectors(transform.localScale, zoneBox.center), ForcesStaticMembers.MultiplyVectors(transform.localScale, zoneBox.size));
         falloffBounds = new Bounds(zoneBounds.center, ForcesStaticMembers.AddToVector(zoneBounds.size, falloffRange * 2));
     }
 

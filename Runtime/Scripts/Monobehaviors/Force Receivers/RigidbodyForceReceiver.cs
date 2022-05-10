@@ -52,6 +52,9 @@ public class RigidbodyForceReceiver : MonoBehaviour
                         case ForceType.VelocityChange:
                             rb.AddForce(forceVectors[i], ForceMode.VelocityChange);
                             break;
+                        case ForceType.Wind:
+                            rb.AddForce(forceVectors[i], ForceMode.Force);
+                            break;
                         case ForceType.Gravity:
                             rb.AddForce(forceVectors[i], ForceMode.Acceleration);
                             break;
