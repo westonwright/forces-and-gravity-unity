@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 // update to allow for other types of collider?
-[RequireComponent(typeof(BoxCollider))]
+[RequireComponent(typeof(BoxShape))]
 //change from requiring box collider
 public class ForceZone : ForceProducer
 {
@@ -19,13 +19,13 @@ public class ForceZone : ForceProducer
     private Bounds zoneBounds;
     private Bounds falloffBounds;
 
-    private BoxCollider zoneCollider;
+    private BoxShape zoneCube;
     protected override void OnDrawGizmos()
     {
         if (preview)
         {
             Gizmos.matrix = Matrix4x4.TRS(transform.position, transform.rotation, Vector3.one);
-            BoxCollider col = GetComponent<BoxCollider>();
+            BoxShape cube = GetComponent<BoxShape>();
             switch (forceType)
             {
                 case ForceType.Force:
@@ -47,13 +47,13 @@ public class ForceZone : ForceProducer
                     Gizmos.color = new Color(0, 1, .5f, 1);
                     break;
             }
-            Gizmos.color = (additive ? Gizmos.color : Gizmos.color * new Color(.75f, .75f, .75f, 1)) * (enableForce ? 1 : .25f);
-            Gizmos.DrawWireCube(ForcesStaticMembers.MultiplyVectors(transform.localScale, col.center), ForcesStaticMembers.MultiplyVectors(transform.localScale, col.size));
+            Gizmos.color = (additive ? Gizmos.color : Gizmos.color * ForcesStaticMembers.lightGray) * (enableForce ? 1 : .25f);
+            Gizmos.DrawWireCube(ForcesStaticMembers.MultiplyVectors(transform.localScale, cube.center), ForcesStaticMembers.MultiplyVectors(transform.localScale, cube.size));
 
             if (falloffRange > 0)
             {
             Gizmos.color = ForcesStaticMembers.MultiplyColors(Gizmos.color, new Color(1, 1, 1, .25f)); //makes falloff semi-transparent
-            Gizmos.DrawWireCube(ForcesStaticMembers.MultiplyVectors(transform.localScale, col.center), ForcesStaticMembers.AddToVector(ForcesStaticMembers.MultiplyVectors(transform.localScale, col.size), falloffRange * 2));
+            Gizmos.DrawWireCube(ForcesStaticMembers.MultiplyVectors(transform.localScale, cube.center), ForcesStaticMembers.AddToVector(ForcesStaticMembers.MultiplyVectors(transform.localScale, cube.size), falloffRange * 2));
             }
             Gizmos.color = Color.white;
 
@@ -80,8 +80,7 @@ public class ForceZone : ForceProducer
 
     private void Awake()
     {
-        zoneCollider = GetComponent<BoxCollider>();
-        zoneCollider.isTrigger = true;
+        zoneCube = GetComponent<BoxShape>();
 
         UpdateBounds();
     }
@@ -121,7 +120,7 @@ public class ForceZone : ForceProducer
 
     public void UpdateBounds()
     {
-        zoneBounds = new Bounds(ForcesStaticMembers.MultiplyVectors(transform.localScale, (zoneCollider as BoxCollider).center), ForcesStaticMembers.MultiplyVectors(transform.localScale, (zoneCollider as BoxCollider).size));
+        zoneBounds = new Bounds(ForcesStaticMembers.MultiplyVectors(transform.localScale, zoneCube.center), ForcesStaticMembers.MultiplyVectors(transform.localScale, zoneCube.size));
         falloffBounds = new Bounds(zoneBounds.center, ForcesStaticMembers.AddToVector(zoneBounds.size, falloffRange * 2));
     }
 

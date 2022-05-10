@@ -89,11 +89,11 @@ public class ForceShape : ForceProducer
                 Gizmos.color = ForcesStaticMembers.MultiplyColors(Gizmos.color, ForcesStaticMembers.semiTransparent); //makes falloff semi-transparent
                 Gizmos.DrawWireSphere(ForcesStaticMembers.MultiplyVectors(transform.localScale, (bs as SphereShape).center), (ForcesStaticMembers.VectorMax(transform.localScale) * (bs as SphereShape).radius) + forceRange + falloffRange);
             }
-            else if (bs is CubeShape)
+            else if (bs is BoxShape)
             {
-                Gizmos.DrawWireCube(ForcesStaticMembers.MultiplyVectors(transform.localScale, (bs as CubeShape).center), ForcesStaticMembers.AddToVector(ForcesStaticMembers.MultiplyVectors(transform.localScale, (bs as CubeShape).size), forceRange));
+                Gizmos.DrawWireCube(ForcesStaticMembers.MultiplyVectors(transform.localScale, (bs as BoxShape).center), ForcesStaticMembers.AddToVector(ForcesStaticMembers.MultiplyVectors(transform.localScale, (bs as BoxShape).size), forceRange));
                 Gizmos.color = ForcesStaticMembers.MultiplyColors(Gizmos.color, ForcesStaticMembers.semiTransparent); //makes falloff semi-transparent
-                Gizmos.DrawWireCube(ForcesStaticMembers.MultiplyVectors(transform.localScale, (bs as CubeShape).center), ForcesStaticMembers.AddToVector(ForcesStaticMembers.MultiplyVectors(transform.localScale, (bs as CubeShape).size), forceRange + falloffRange));
+                Gizmos.DrawWireCube(ForcesStaticMembers.MultiplyVectors(transform.localScale, (bs as BoxShape).center), ForcesStaticMembers.AddToVector(ForcesStaticMembers.MultiplyVectors(transform.localScale, (bs as BoxShape).size), forceRange + falloffRange));
             }
             //figure this out later
             else if (bs is CapsuleShape)

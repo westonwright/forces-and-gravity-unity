@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class CubeShape : BaseShape
+public class BoxShape : BaseShape
 {
     public Vector3 size = Vector3.one;
 
