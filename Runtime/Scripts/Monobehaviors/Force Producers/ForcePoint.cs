@@ -6,7 +6,7 @@ public class ForcePoint : ForceProducer
 {
     [SerializeField]
     [Tooltip("The distance it takes for the force to fade")]
-    protected float falloffRange = 0f;
+    protected float falloffRange = 10f;
 
     protected override void OnDrawGizmos()
     {

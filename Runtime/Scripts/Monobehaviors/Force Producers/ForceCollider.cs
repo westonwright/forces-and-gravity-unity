@@ -5,10 +5,10 @@ using UnityEngine;
 //placed on the mesh providing gravity
 //needs a MeshKDTree if Collider is a mesh Collider
 [RequireComponent(typeof(Collider))]
-public class ForceSurface : ForceProducer
+public class ForceCollider : ForceProducer
 {
     [SerializeField]
-    [Tooltip("How far the full-strength force extends out from the mesh")]
+    [Tooltip("How far the full-strength force extends out from the collider")]
     //how far out this plante's gravity reaches (not including falloff range)
     private float forceRange = 5f;
     [SerializeField]
@@ -108,6 +108,34 @@ public class ForceSurface : ForceProducer
         }
     }
 
+    protected override void Reset()
+    {
+        forceCollider = GetComponent<Collider>();
+        if(forceCollider is MeshCollider)
+        {
+            if (gameObject.GetComponent<MeshColliderKDTree>() == null)
+            {
+                Debug.LogWarning("Force Collider using a Mesh Collider without a 'MeshColliderKDTree'!", gameObject);
+                gameObject.AddComponent<MeshColliderKDTree>();
+                Debug.LogWarning("Added a 'MeshColliderKDTree' to " + gameObject.name + ".", gameObject);
+            }
+        }
+        else
+        {
+            if (gameObject.GetComponent<MeshColliderKDTree>() != null)
+            {
+                Debug.LogWarning("Force Collider \"" + gameObject.name + "\" does not need a 'MeshColliderKDTree' component because it is not using a Mesh Collider", gameObject);
+            }
+        }
+    }
+
+#if UNITY_EDITOR
+    protected override void OnValidate()
+    {
+        Reset();
+    }
+#endif
+
     private void Awake()
     {
         forceCollider = GetComponent<Collider>();
@@ -116,16 +144,18 @@ public class ForceSurface : ForceProducer
         {
             if (forceCollider is MeshCollider)
             {
-                if (gameObject.GetComponent<MeshKDTree>() == null)
+                if (gameObject.GetComponent<MeshColliderKDTree>() == null)
                 {
-                    Debug.LogWarning("Force Surface \"" + gameObject.name + "\" does not have a MeshKDTree component for its Mesh! Additional calculations will happen every frame!", gameObject);
+                    Debug.LogWarning("Force Collider \"" + gameObject.name + "\" does not have a 'MeshColliderKDTree' component for its Mesh! MeshColliderKDTree will be added at runtime!", gameObject);
+                    gameObject.AddComponent<MeshColliderKDTree>();
+                    Debug.LogWarning("MeshColliderKDTree added to " + gameObject.name + "!", gameObject);
                 }
             }
             else
             {
-                if (gameObject.GetComponent<MeshKDTree>() != null)
+                if (gameObject.GetComponent<MeshColliderKDTree>() != null)
                 {
-                    Debug.LogWarning("Force Surface \"" + gameObject.name + "\" does not need a MeshKDTree component because it is not using a Mesh Collider", gameObject);
+                    Debug.LogWarning("Force Collider \"" + gameObject.name + "\" does not need a 'MeshColliderKDTree' component because it is not using a Mesh Collider", gameObject);
                 }
             }
         }
@@ -142,9 +172,15 @@ public class ForceSurface : ForceProducer
         float distance = Vector3.Distance(point, forceCollider.bounds.center);
         if (distance <= activationRadius)
         {
-            Vector3 surfacePoint = ColliderCalculations.ClosestPointOnSurface(forceCollider, point, 0, ref normal);
+            Vector3 surfacePoint = ColliderCalculations.ClosestPointOnCollider(forceCollider, point, ref normal);
+            if (normal == Vector3.zero)
+            {
+                strength = 0;
+                return Vector3.zero;
+            }
             distance = Vector3.Distance(point, surfacePoint);
-            if(distance > forceRange + falloffRange)
+
+            if (distance > forceRange + falloffRange)
             {
                 return Vector3.zero;
             }
@@ -168,7 +204,7 @@ public class ForceSurface : ForceProducer
     public override Vector3 ForceVector(Vector3 point)
     {
         Vector3 normal = Vector3.zero;
-        ColliderCalculations.ClosestPointOnSurface(forceCollider, point, 0, ref normal);
+        ColliderCalculations.ClosestPointOnCollider(forceCollider, point, ref normal);
         return -normal * forceStrength;
     }
 

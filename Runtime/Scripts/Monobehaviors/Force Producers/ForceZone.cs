@@ -4,6 +4,7 @@ using UnityEngine;
 
 // update to allow for other types of collider?
 [RequireComponent(typeof(BoxCollider))]
+//change from requiring box collider
 public class ForceZone : ForceProducer
 {
     [SerializeField]

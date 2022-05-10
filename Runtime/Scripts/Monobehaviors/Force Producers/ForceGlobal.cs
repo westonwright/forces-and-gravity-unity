@@ -35,7 +35,13 @@ public class ForceGlobal : ForceProducer
             Gizmos.DrawLine(rightPoint, frontPoint);
         }
     }
-   
+
+    protected override void Reset()
+    {
+        importance = 0;
+    }
+
+
     public override Vector3 ForceVector(Vector3 point, out float strength)
     {
         strength = 1;

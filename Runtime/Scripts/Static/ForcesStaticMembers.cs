@@ -14,6 +14,10 @@ public static class ForcesStaticMembers
 
     public static int forceTypeCount;
 
+    public static Color shapeColor;
+    public static Color semiTransparent;
+    public static Color lightGray;
+
     static ForcesStaticMembers()
     {
         string dataPath = GetDataPath();
@@ -23,6 +27,10 @@ public static class ForcesStaticMembers
             Debug.LogError("Missing Scriptable Object " + forceManagerSOName + "! Package may be corrupted !");
         }
         forceTypeCount = Enum.GetNames(typeof(ForceType)).Length;
+
+        shapeColor = new Color(.5f, .5f, 1f);
+        semiTransparent = new Color(1, 1, 1, .25f);
+        lightGray = new Color(.75f, .75f, .75f, 1);
     }
 
     private static string GetDataPath()
@@ -146,6 +154,61 @@ public static class ForcesStaticMembers
         return new Vector3(u, v, w);
     }
 
+    public static Bounds LocalToGlobalBounds(Bounds localBounds, Vector3 center, Vector3 size, Transform transform)
+    {
+        Bounds globalBounds = new Bounds();
+
+        globalBounds.center = MultiplyVectors(localBounds.center, transform.lossyScale) + transform.position + (transform.rotation * MultiplyVectors(center, transform.lossyScale));
+        globalBounds.size = MultiplyVectors(MultiplyVectors(localBounds.size, size), transform.lossyScale);
+
+        Vector3 extents = globalBounds.extents;
+
+        Vector3[] points = new Vector3[8];
+        points[0] = center + (transform.rotation * new Vector3(extents.x, extents.y, extents.z));
+        points[1] = center + (transform.rotation * new Vector3(extents.x, extents.y, -extents.z));
+        points[2] = center + (transform.rotation * new Vector3(extents.x, -extents.y, extents.z));
+        points[3] = center + (transform.rotation * new Vector3(extents.x, -extents.y, -extents.z));
+        points[4] = center + (transform.rotation * new Vector3(-extents.x, extents.y, extents.z));
+        points[5] = center + (transform.rotation * new Vector3(-extents.x, extents.y, -extents.z));
+        points[6] = center + (transform.rotation * new Vector3(-extents.x, -extents.y, extents.z));
+        points[7] = center + (transform.rotation * new Vector3(-extents.x, -extents.y, -extents.z));
+
+        Vector3 maxVector = Vector3.negativeInfinity;
+
+        Vector3 minVector = Vector3.positiveInfinity;
+
+        foreach (Vector3 point in points)
+        {
+            if (point.x > maxVector.x)
+            {
+                maxVector.x = point.x;
+            }
+            if (point.y > maxVector.y)
+            {
+                maxVector.y = point.y;
+            }
+            if (point.z > maxVector.z)
+            {
+                maxVector.z = point.z;
+            }
+            if (point.x < minVector.x)
+            {
+                minVector.x = point.x;
+            }
+            if (point.y < minVector.y)
+            {
+                minVector.y = point.y;
+            }
+            if (point.z < minVector.z)
+            {
+                minVector.z = point.z;
+            }
+        }
+        globalBounds.size = maxVector - minVector;
+
+        return globalBounds;
+    }
+
     public static void VectorCompositeStraight(float alphaA, float alphaB, Vector3 vectorA, Vector3 vectorB, out float alpha, out Vector3 color)
     {
         alpha = alphaA + (alphaB * (1 - alphaA));
@@ -184,5 +247,15 @@ public static class ForcesStaticMembers
     public static float VectorMax(Vector2 v)
     {
         return Mathf.Max(v.x, v.y);
+    }
+    
+    public static float VectorMin(Vector3 v)
+    {
+        return Mathf.Min(Mathf.Min(v.x, v.y), v.z);
+    }
+
+    public static float VectorMin(Vector2 v)
+    {
+        return Mathf.Min(v.x, v.y);
     }
 }

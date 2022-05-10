@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
-/// Base class for all force producers. This one just pulls in the object from anywhere
+/// Base class for all force producers. This one is not to be used
 /// </summary>
 public class ForceProducer : MonoBehaviour
 {
@@ -36,35 +36,24 @@ public class ForceProducer : MonoBehaviour
 
     protected virtual void OnDrawGizmos()
     {
-        Gizmos.matrix = Matrix4x4.TRS(transform.position, Quaternion.identity, Vector3.one);
-
-        switch (forceType)
-        {
-            case ForceType.Force:
-                Gizmos.color = new Color(1, 0, 0, 1);
-                break;
-            case ForceType.Acceleration:
-                Gizmos.color = new Color(1, .5f, 0, 1);
-                break;
-            case ForceType.Impulse:
-                Gizmos.color = new Color(1, 1, 0, 1);
-                break;
-            case ForceType.VelocityChange:
-                Gizmos.color = new Color(.5f, 1, 0, 1);
-                break;
-            case ForceType.Gravity:
-                Gizmos.color = new Color(0, 1, 0, 1);
-                break;
-            case ForceType.Generic:
-                Gizmos.color = new Color(0, 1, .5f, 1);
-                break;
-        }
-        Gizmos.color = (additive ? Gizmos.color : Gizmos.color * new Color(.75f, .75f, .75f, 1)) * (enableForce ? 1 : .25f);
-
-        Gizmos.DrawLine(Vector3.down, Vector3.up);
-        Gizmos.DrawLine(Vector3.right, Vector3.left);
-        Gizmos.DrawLine(Vector3.forward, Vector3.back);
     }
+
+    protected virtual void Reset()
+    {
+        if(this.GetType() == typeof(ForceProducer))
+        {
+            Debug.LogError("Do not use 'ForceProducer'! Use one of its derived classes!", gameObject);
+            Debug.LogError("Destorying 'ForceProducer' on " + gameObject + "!", gameObject);
+            DestroyImmediate(this);
+        }
+    }
+
+#if UNITY_EDITOR
+    protected virtual void OnValidate()
+    {
+
+    }
+#endif
 
     protected virtual void OnEnable()
     {
@@ -92,7 +81,7 @@ public class ForceProducer : MonoBehaviour
     //returns the gravity vector at this point regardless of range
     public virtual Vector3 ForceVector(Vector3 point)
     {
-        return (transform.position - point).normalized * forceStrength;
+        return Vector3.zero;
     }
 
     //returns where in the falloff gradient the point is
@@ -101,6 +90,6 @@ public class ForceProducer : MonoBehaviour
     public virtual Vector3 ForceVector(Vector3 point, out float strength)
     {
         strength = 1;
-        return (transform.position - point).normalized * forceStrength;
+        return Vector3.zero;
     }
 }
