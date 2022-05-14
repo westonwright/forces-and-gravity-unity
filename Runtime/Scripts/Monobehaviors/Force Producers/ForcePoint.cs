@@ -37,7 +37,7 @@ public class ForcePoint : ForceProducer
         float distance = Vector3.Distance(transform.position, point);
         if (distance < (radius + falloffRange))
         {
-            Vector3 direction = (transform.position - point).normalized;
+            Vector3 direction = (point - transform.position).normalized;
             if (distance < radius)
             {
                 return direction * forceStrength;
@@ -61,7 +61,7 @@ public class ForcePoint : ForceProducer
         float distance = Vector3.Distance(transform.position, point);
         if (distance < (radius + falloffRange))
         {
-            Vector3 direction = (transform.position - point).normalized;
+            Vector3 direction = (point - transform.position).normalized;
             if (distance < radius)
             {
                 strength = 1;
