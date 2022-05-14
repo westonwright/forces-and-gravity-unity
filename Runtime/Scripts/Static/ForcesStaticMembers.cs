@@ -6,14 +6,13 @@ using UnityEditor;
 
 public static class ForcesStaticMembers
 {
-    /*
-    private static string forceManagerSOName = "ForceManagerSO.asset";
+    //private static string forceManagerSOName = "ForceManagerSO.asset";
     private static string defaultForceTypeSOName = "ForceSO.asset";
     private static string packageName = "com.weston-wright.forces-and-gravity";
     private static string scriptableObjectsPath = "/Runtime/Scriptable Objects/";
-    private static string managersSOPath = "Managers/";
+    //private static string managersSOPath = "Managers/";
     private static string forceTypeSOPath = "Force Types/";
-    */
+
     public static ForceManagerSO forceManagerSO;
     public static ForceTypeSO defaultForceTypeSO;
 
@@ -26,29 +25,33 @@ public static class ForcesStaticMembers
         forceManagerSO = Resources.Load<ForceManagerSO>("ForceManagerSO");
         defaultForceTypeSO = Resources.Load<ForceTypeSO>("ForceSO");
         /*
-        string dataPath = GetDataPath();
         forceManagerSO = (ForceManagerSO)AssetDatabase.LoadAssetAtPath(dataPath + packageName + scriptableObjectsPath + managersSOPath + forceManagerSOName, typeof(ForceManagerSO));
         if (forceManagerSO == null)
         {
             Debug.LogError("Missing Scriptable Object " + forceManagerSOName + "! Package may be corrupted !");
         }
+        */
+
+#if UNITY_EDITOR
+
+        string dataPath = GetDataPath();
 
         defaultForceTypeSO = (ForceTypeSO)AssetDatabase.LoadAssetAtPath(dataPath + packageName + scriptableObjectsPath + forceTypeSOPath + defaultForceTypeSOName, typeof(ForceTypeSO));
         if (defaultForceTypeSO == null)
         {
             Debug.LogError("Missing Scriptable Object " + defaultForceTypeSOName + "! Package may be corrupted !");
         }
-        */
+#endif
+
         shapeColor = new Color(.5f, .5f, 1f);
         semiTransparent = new Color(1, 1, 1, .5f);
         lightGray = new Color(.75f, .75f, .75f, 1);
     }
 
-    /*
     private static string GetDataPath()
     {
         // detect if in packages or assets folder
-        string dataPath = "Packages/";
+        string dataPath = "";
 #if UNITY_EDITOR
         var assembly = System.Reflection.Assembly.GetExecutingAssembly();
         var packageInfo = UnityEditor.PackageManager.PackageInfo.FindForAssembly(assembly);
@@ -65,7 +68,6 @@ public static class ForcesStaticMembers
 #endif  
         return dataPath;
     }
-    */
     public static Vector3 SmoothedNormalVector(Vector3 nearestPt, Vector3 A, Vector3 B, Vector3 C, Vector3 N0, Vector3 N1, Vector3 N2, Transform transform)
     {
         Vector3 bary = ForcesStaticMembers.Barycentric(nearestPt, A, B, C);

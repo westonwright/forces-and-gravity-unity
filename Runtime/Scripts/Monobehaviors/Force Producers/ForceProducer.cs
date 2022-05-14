@@ -81,9 +81,11 @@ public class ForceProducer : MonoBehaviour
         }
         else
         {
+#if UNITY_EDITOR
+            ForceType = ForcesStaticMembers.defaultForceTypeSO;
+#endif
             preview = true;
             enableForce = true;
-            ForceType = ForcesStaticMembers.defaultForceTypeSO;
             layerMask = ~0;
 
             forceStrength = 10f;
