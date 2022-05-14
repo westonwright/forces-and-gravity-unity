@@ -121,20 +121,23 @@ public class CapsuleShape : BaseShape
         Bounds topBounds = new Bounds
         (
             //(transform.rotation * (ForcesStaticMembers.MultiplyVectors(center + boundsOffset, transform.lossyScale) - capRadius)) + transform.position,
-            (transform.rotation * (ForcesStaticMembers.MultiplyVectors(boundsOffset, transform.lossyScale) - capRadius)) + transform.position,
+            (transform.rotation * (ForcesStaticMembers.MultiplyVectors(Vector3.zero + boundsOffset, transform.lossyScale) - capRadius)) + transform.position,
+            //(transform.rotation * (ForcesStaticMembers.MultiplyVectors(boundsOffset, transform.lossyScale) - capRadius)) + transform.position,
             (radius * 2 * maxRad) * Vector3.one
         );
         
         Bounds bottomBounds = new Bounds
         (
             //(transform.rotation * (ForcesStaticMembers.MultiplyVectors(center - boundsOffset, transform.lossyScale) + capRadius)) + transform.position,
-            (transform.rotation * (ForcesStaticMembers.MultiplyVectors(boundsOffset, transform.lossyScale) + capRadius)) + transform.position,
+            (transform.rotation * (ForcesStaticMembers.MultiplyVectors(Vector3.zero - boundsOffset, transform.lossyScale) + capRadius)) + transform.position,
+            //(transform.rotation * (ForcesStaticMembers.MultiplyVectors(boundsOffset, transform.lossyScale) + capRadius)) + transform.position,
             (radius * 2 * maxRad) * Vector3.one
         );
 
         Bounds totalBounds = new Bounds();
         //totalBounds.center = (transform.rotation * ForcesStaticMembers.MultiplyVectors(center, transform.lossyScale)) + transform.position;
-        totalBounds.center =transform.position;
+        totalBounds.center = (transform.rotation * ForcesStaticMembers.MultiplyVectors(Vector3.zero, transform.lossyScale)) + transform.position;
+        //totalBounds.center =transform.position;
         totalBounds.max = Vector3.Max(topBounds.center + topBounds.extents, bottomBounds.center + bottomBounds.extents);
         totalBounds.min = Vector3.Min(topBounds.center - topBounds.extents, bottomBounds.center - bottomBounds.extents);
 
