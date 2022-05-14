@@ -7,8 +7,8 @@ public class RigidbodyForceReceiver : MonoBehaviour
 {
     [Tooltip("If this object should be affected by forces by default.")]
     public bool enableForces = true;
-    [Tooltip("If this object should check against proveiders layer masks when applying forces")]
-    public bool useLayerMask = true;
+    [Tooltip("If this object should ignore checking Proveider layer masks when applying forces")]
+    public bool ignoreLayerMask = false;
 
     protected Rigidbody rb;
 
@@ -32,36 +32,12 @@ public class RigidbodyForceReceiver : MonoBehaviour
             if (enableForces)
             {
                 int? layer = null;
-                if (useLayerMask) layer = gameObject.layer;
+                if (ignoreLayerMask) layer = gameObject.layer;
 
-
-                Vector3[] forceVectors = forceManagerSO.GetTotalForcesAtPoint(rb.position, layer);
-                for (int i = 0; i < ForcesStaticMembers.forceTypeCount; i++)
+                (ForceTypeSO, Vector3)[] forceVectors = forceManagerSO.GetTotalForcesAtPoint(rb.position, layer);
+                foreach((ForceTypeSO forceType, Vector3 vector) forceVector in forceVectors)
                 {
-                    switch ((ForceType)i)
-                    {
-                        case ForceType.Force:
-                            rb.AddForce(forceVectors[i], ForceMode.Force);
-                            break;
-                        case ForceType.Acceleration:
-                            rb.AddForce(forceVectors[i], ForceMode.Acceleration);
-                            break;
-                        case ForceType.Impulse:
-                            rb.AddForce(forceVectors[i], ForceMode.Impulse);
-                            break;
-                        case ForceType.VelocityChange:
-                            rb.AddForce(forceVectors[i], ForceMode.VelocityChange);
-                            break;
-                        case ForceType.Wind:
-                            rb.AddForce(forceVectors[i], ForceMode.Force);
-                            break;
-                        case ForceType.Gravity:
-                            rb.AddForce(forceVectors[i], ForceMode.Acceleration);
-                            break;
-                        case ForceType.Generic:
-                            rb.AddForce(forceVectors[i], ForceMode.Force);
-                            break;
-                    }
+                    rb.AddForce(forceVector.vector, forceVector.forceType.forceMode);
                 }
             }
         }

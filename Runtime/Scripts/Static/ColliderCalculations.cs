@@ -69,7 +69,7 @@ public static class ColliderCalculations
         p = to - collider.transform.position;
         p.Normalize();
 
-        p *= collider.radius * ForcesStaticMembers.VectorMax(collider.transform.localScale);
+        p *= collider.radius * ForcesStaticMembers.VectorHighest(collider.transform.localScale);
         p += collider.transform.position;
 
         //Debug.DrawRay(p, normal, Color.red);
@@ -87,7 +87,7 @@ public static class ColliderCalculations
         //set normal for ref
         normal = p;
 
-        p *= collider.radius * ForcesStaticMembers.VectorMax(collider.transform.localScale);
+        p *= collider.radius * ForcesStaticMembers.VectorHighest(collider.transform.localScale);
         p += collider.transform.position;
 
         //Debug.DrawRay(p, normal, Color.red);

@@ -7,12 +7,14 @@ using UnityEditor;
 public static class ForcesStaticMembers
 {
     private static string forceManagerSOName = "ForceManagerSO.asset";
+    private static string defaultForceTypeSOName = "ForceSO.asset";
     private static string packageName = "com.weston-wright.forces-and-gravity";
     private static string scriptableObjectsPath = "/Runtime/Scriptable Objects/";
+    private static string managersSOPath = "Managers/";
+    private static string forceTypeSOPath = "Force Types/";
 
     public static ForceManagerSO forceManagerSO;
-
-    public static int forceTypeCount;
+    public static ForceTypeSO defaultForceTypeSO;
 
     public static Color shapeColor;
     public static Color semiTransparent;
@@ -21,15 +23,20 @@ public static class ForcesStaticMembers
     static ForcesStaticMembers()
     {
         string dataPath = GetDataPath();
-        forceManagerSO = (ForceManagerSO)AssetDatabase.LoadAssetAtPath(dataPath + packageName + scriptableObjectsPath + forceManagerSOName, typeof(ForceManagerSO));
+        forceManagerSO = (ForceManagerSO)AssetDatabase.LoadAssetAtPath(dataPath + packageName + scriptableObjectsPath + managersSOPath + forceManagerSOName, typeof(ForceManagerSO));
         if (forceManagerSO == null)
         {
             Debug.LogError("Missing Scriptable Object " + forceManagerSOName + "! Package may be corrupted !");
         }
-        forceTypeCount = Enum.GetNames(typeof(ForceType)).Length;
+
+        defaultForceTypeSO = (ForceTypeSO)AssetDatabase.LoadAssetAtPath(dataPath + packageName + scriptableObjectsPath + forceTypeSOPath + defaultForceTypeSOName, typeof(ForceTypeSO));
+        if (defaultForceTypeSO == null)
+        {
+            Debug.LogError("Missing Scriptable Object " + defaultForceTypeSOName + "! Package may be corrupted !");
+        }
 
         shapeColor = new Color(.5f, .5f, 1f);
-        semiTransparent = new Color(1, 1, 1, .25f);
+        semiTransparent = new Color(1, 1, 1, .5f);
         lightGray = new Color(.75f, .75f, .75f, 1);
     }
 
@@ -229,6 +236,17 @@ public static class ForcesStaticMembers
     {
         return new Vector2(v1.x * v2.x, v1.y * v2.y);
     }
+    
+    public static Vector3 DivideVectors(Vector3 v1, Vector3 v2)
+    {
+        return new Vector3(v1.x / v2.x, v1.y / v2.y, v1.z / v2.z);
+    }
+
+    public static Vector2 DivideVectors(Vector2 v1, Vector2 v2)
+    {
+        return new Vector2(v1.x / v2.x, v1.y / v2.y);
+    }
+
     public static Vector3 AddToVector(Vector3 v, float f)
     {
         return new Vector3(v.x + f, v.y + f, v.z + f);
@@ -239,23 +257,74 @@ public static class ForcesStaticMembers
         return new Vector2(v.x + f, v.y + f);
     }
 
-    public static float VectorMax(Vector3 v)
+    public static Vector3 AbsVector(Vector3 v)
+    {
+        return new Vector3(Mathf.Abs(v.x), Mathf.Abs(v.y), Mathf.Abs(v.z));
+    }
+    
+    public static Vector2 AbsVector(Vector2 v)
+    {
+        return new Vector2(Mathf.Abs(v.x), Mathf.Abs(v.y));
+    }
+    public static Vector3 MaxOfVectors(Vector3 v1, Vector3 v2)
+    {
+        return new Vector3(Mathf.Max(v1.x, v2.x), Mathf.Max(v1.y, v2.y), Mathf.Max(v1.z, v2.z));
+    }
+
+    public static Vector2 MaxOfVectors(Vector2 v1, Vector2 v2)
+    {
+        return new Vector2(Mathf.Max(v1.x, v2.x), Mathf.Max(v1.y, v2.y));
+    }
+
+    public static Vector3 MinOfVectors(Vector3 v1, Vector3 v2)
+    {
+        return new Vector3(Mathf.Min(v1.x, v2.x), Mathf.Min(v1.y, v2.y), Mathf.Min(v1.z, v2.z));
+    }
+
+    public static Vector2 MinOfVectors(Vector2 v1, Vector2 v2)
+    {
+        return new Vector2(Mathf.Min(v1.x, v2.x), Mathf.Min(v1.y, v2.y));
+    }
+
+    public static Vector3 MaxVector(Vector3 v, float f)
+    {
+        return new Vector3(Mathf.Max(v.x, f), Mathf.Max(v.y, f), Mathf.Max(v.z, f));
+    }
+    
+    public static Vector2 MaxVector(Vector2 v, float f)
+    {
+        return new Vector2(Mathf.Max(v.x, f), Mathf.Max(v.y, f));
+    }
+    
+    public static Vector3 MinVector(Vector3 v, float f)
+    {
+        return new Vector3(Mathf.Min(v.x, f), Mathf.Min(v.y, f), Mathf.Min(v.z, f));
+    }
+    
+    public static Vector2 MinVector(Vector2 v, float f)
+    {
+        return new Vector2(Mathf.Min(v.x, f), Mathf.Min(v.y, f));
+    }
+
+    public static float VectorHighest(Vector3 v)
     {
         return Mathf.Max(Mathf.Max(v.x, v.y), v.z);
     }
 
-    public static float VectorMax(Vector2 v)
+    public static float VectorHighest(Vector2 v)
     {
         return Mathf.Max(v.x, v.y);
     }
     
-    public static float VectorMin(Vector3 v)
+    public static float VectorLowest(Vector3 v)
     {
         return Mathf.Min(Mathf.Min(v.x, v.y), v.z);
     }
 
-    public static float VectorMin(Vector2 v)
+    public static float VectorLowest(Vector2 v)
     {
         return Mathf.Min(v.x, v.y);
     }
+
+
 }

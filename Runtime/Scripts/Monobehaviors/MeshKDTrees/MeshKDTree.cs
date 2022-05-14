@@ -58,6 +58,16 @@ public class MeshKDTree : MonoBehaviour
         return transform.TransformPoint(NearestPointOnMesh(position, verts, kd, tris, norms, vt));
     }
 
+
+    public float SignedDistance(Vector3 position)
+    {
+        Vector3 normal = Vector3.zero;
+        Vector3 surfacePoint = transform.TransformPoint(NearestPointOnMesh(transform.InverseTransformPoint(position), verts, kd, tris, norms, vt, ref normal));
+        Vector3 offsetNormal = (surfacePoint - position).normalized;
+        float distance = Vector3.Distance(surfacePoint, position);
+        return Vector3.Dot(normal, offsetNormal) < 0 ? distance : -distance;
+    }
+
     public virtual void SetMesh(Mesh m)
     {
         mesh = m;

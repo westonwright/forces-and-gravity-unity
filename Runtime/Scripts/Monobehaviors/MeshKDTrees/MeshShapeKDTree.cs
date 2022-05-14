@@ -2,22 +2,29 @@
 using System.Collections.Generic;
 // with code from HiddenMonk: https://forum.unity.com/threads/get-the-collision-points-in-physics-overlapsphere.395176/#post-2581349
 
-//place on mesh used to get gravity vector
-[RequireComponent(typeof(MeshCollider))]
+// place on mesh used to get gravity vector
+// TODO: change so that you can delete component on objects
+[RequireComponent(typeof(MeshShape))]
 public class MeshShapeKDTree : MeshKDTree
 {
     MeshShape ms;
     protected override void Awake()
     {
         ms = GetComponent<MeshShape>();
-        mesh = ms.mesh;
-        InitializeKDTree();
+        if (ms != null)
+        {
+            mesh = ms.mesh;
+            InitializeKDTree();
+        }
     }
 
     protected override void Reset()
     {
         ms = GetComponent<MeshShape>();
-        mesh = ms.mesh;
+        if(ms != null)
+        {
+            mesh = ms.mesh;
+        }
     }
 
 #if UNITY_EDITOR
@@ -25,10 +32,13 @@ public class MeshShapeKDTree : MeshKDTree
     {
         ms = GetComponent<MeshShape>();
 
-        if (mesh != ms.mesh)
+        if (ms != null)
         {
-            Debug.LogWarning("Don't manually change mesh on 'MeshShapeKDTree'!", gameObject);
-            mesh = ms.mesh;
+            if (mesh != ms.mesh)
+            {
+                Debug.LogWarning("Don't manually change mesh on 'MeshShapeKDTree'!", gameObject);
+                mesh = ms.mesh;
+            }
         }
     }
 #endif

@@ -6,7 +6,7 @@ using UnityEngine;
 public class ForceManagerSO : ScriptableObject
 {
     private List<ForceProducer> producers = new List<ForceProducer>();
-
+    Dictionary<ForceTypeSO, int> forceTypes = new Dictionary<ForceTypeSO, int>();
 
     // use this from gravity attractors to add them in as they load with a scene
     public void AddForceProducer(ForceProducer producer)
@@ -14,6 +14,14 @@ public class ForceManagerSO : ScriptableObject
         if (!producers.Contains(producer))
         {
             producers.Add(producer);
+            if (forceTypes.ContainsKey(producer.forceType))
+            {
+                forceTypes[producer.forceType] += 1;
+            }
+            else
+            {
+                forceTypes.Add(producer.forceType, 1);
+            }
         }
         // sort the sources every time one is added
         SortProducers();
@@ -23,6 +31,14 @@ public class ForceManagerSO : ScriptableObject
     public void RemoveForceProducer(ForceProducer producer)
     {
         producers.Remove(producer);
+        if (forceTypes.ContainsKey(producer.forceType))
+        {
+            forceTypes[producer.forceType] -= 1;
+            if (forceTypes[producer.forceType] <= 0)
+            {
+                forceTypes.Remove(producer.forceType);
+            }
+        }
     }
 
     // sorts source importance from low to high, with 0 at the end
@@ -82,13 +98,14 @@ public class ForceManagerSO : ScriptableObject
     /// </summary>
     /// <param name="point">The point in World Space to use check against all Force Producers</param>
     /// <returns></returns>
-    public Vector3[] GetWeightedForcesAtPoint(Vector3 point, int? layer = null)
+    public (ForceTypeSO, Vector3)[] GetWeightedForcesAtPoint(Vector3 point, int? layer = null)
     {
-
-        Vector3[] forceVectors = new Vector3[ForcesStaticMembers.forceTypeCount];
-        for (int i = 0; i < ForcesStaticMembers.forceTypeCount; i++)
+        (ForceTypeSO, Vector3)[] forceVectors = new (ForceTypeSO, Vector3)[forceTypes.Count];
+        int index = 0;
+        foreach(ForceTypeSO ft in forceTypes.Keys)
         {
-            forceVectors[i] = GetWeightedForceTypeAtPoint(point, (ForceType)i, layer);
+            forceVectors[index] = (ft, GetWeightedForceTypeAtPoint(point, ft, layer));
+            index++;
         }
 
         return forceVectors;
@@ -101,26 +118,30 @@ public class ForceManagerSO : ScriptableObject
     /// <param name="forceType">The type of force to check for</param>
     /// <param name="layer">The layer to check against</param>
     /// <returns></returns>
-    public Vector3 GetWeightedForceTypeAtPoint(Vector3 point, ForceType forceType, int? layer = null)
+    public Vector3 GetWeightedForceTypeAtPoint(Vector3 point, ForceTypeSO forceType, int? layer = null)
     {
         Vector3 forceVector = Vector3.zero;
         float alpha = 0;
 
         foreach (ForceProducer producer in producers)
         {
-            if (!producer.enableForce || (producer.forceType != forceType)) continue;
+            if (!producer.isStatic) producer.UpdateProducer();
+            if (!producer.enableForce || !forceType.mixesWith.Contains(producer.forceType)) continue;
+            //if (!producer.enableForce || (producer.forceType != forceType)) continue;
             // if layer is set, check against layer mask
             if (layer.HasValue ? !(producer.layerMask == (producer.layerMask | (1 << layer.Value))) : false) continue;
-
 
             //only calculate if gravity isn't at 100% and not additive
             if (!producer.additive && alpha < 1)
             {
-                Vector3 vector = producer.ForceVector(point, out float strength);
-                vector *= producer.invert ? -1 : 1;
-                if (strength > 0)
+                if (producer.PointInRange(point))
                 {
-                    ForcesStaticMembers.VectorCompositeStraight(alpha, strength, forceVector, vector, out alpha, out forceVector);
+                    Vector3 vector = producer.ForceVector(point, out float strength);
+                    vector *= producer.invert ? -1 : 1;
+                    if (strength > 0)
+                    {
+                        ForcesStaticMembers.VectorCompositeStraight(alpha, strength, forceVector, vector, out alpha, out forceVector);
+                    }
                 }
             }
         }
@@ -138,12 +159,14 @@ public class ForceManagerSO : ScriptableObject
     /// </summary>
     /// <param name="point">The point in World Space to use check against all Force Producers</param>
     /// <returns></returns>
-    public Vector3[] GetAdditiveForcesAtPoint(Vector3 point, int? layer = null)
+    public (ForceTypeSO, Vector3)[] GetAdditiveForcesAtPoint(Vector3 point, int? layer = null)
     {
-        Vector3[] forceVectors = new Vector3[ForcesStaticMembers.forceTypeCount];
-        for (int i = 0; i < ForcesStaticMembers.forceTypeCount; i++)
+        (ForceTypeSO, Vector3)[] forceVectors = new (ForceTypeSO, Vector3)[forceTypes.Count];
+        int index = 0;
+        foreach (ForceTypeSO ft in forceTypes.Keys)
         {
-            forceVectors[i] = GetAdditiveForceTypeAtPoint(point, (ForceType)i, layer);
+            forceVectors[index] = (ft, GetAdditiveForceTypeAtPoint(point, ft, layer));
+            index++;
         }
 
         return forceVectors;
@@ -156,25 +179,26 @@ public class ForceManagerSO : ScriptableObject
     /// <param name="point">The point in World Space to use check against all Force Producers</param>
     /// <param name="forceType">The type of force to check for</param>
     /// <returns></returns>
-    public Vector3 GetAdditiveForceTypeAtPoint(Vector3 point, ForceType forceType, int? layer = null)
+    public Vector3 GetAdditiveForceTypeAtPoint(Vector3 point, ForceTypeSO forceType, int? layer = null)
     {
         Vector3 forceVector = Vector3.zero;
 
         foreach (ForceProducer producer in producers)
         {
-            if (!producer.enableForce || (producer.forceType != forceType)) continue;
+            if (!producer.isStatic) producer.UpdateProducer();
+            if (!producer.enableForce || !forceType.mixesWith.Contains(producer.forceType)) continue;
+            //if (!producer.enableForce || (producer.forceType != forceType)) continue;
             // if layer is set, check against layer mask
             if (layer.HasValue ? !(producer.layerMask == (producer.layerMask | (1 << layer.Value))) : false) continue;
-
 
             // only calculate if gravity isn't at 100% and not additive
             if (producer.additive)
             {
-                Vector3 vector = producer.ForceVector(point, out float strength);
-                vector *= producer.invert ? -1 : 1;
-                if (strength > 0)
+                if (producer.PointInRange(point))
                 {
-                    forceVector += vector * strength;
+                    Vector3 vector = producer.ForceVector(point);
+                    vector *= producer.invert ? -1 : 1;
+                    forceVector += vector;
                 }
             }
         }
@@ -187,12 +211,14 @@ public class ForceManagerSO : ScriptableObject
     /// </summary>
     /// <param name="point">The point in World Space to use check against all Force Producers</param>
     /// <returns></returns>
-    public Vector3[] GetTotalForcesAtPoint(Vector3 point, int? layer = null)
+    public (ForceTypeSO, Vector3)[] GetTotalForcesAtPoint(Vector3 point, int? layer = null)
     {
-        Vector3[] forceVectors = new Vector3[ForcesStaticMembers.forceTypeCount];
-        for (int i = 0; i < ForcesStaticMembers.forceTypeCount; i++)
+        (ForceTypeSO, Vector3)[] forceVectors = new (ForceTypeSO, Vector3)[forceTypes.Count];
+        int index = 0;
+        foreach (ForceTypeSO ft in forceTypes.Keys)
         {
-            forceVectors[i] = GetTotalForceTypeAtPoint(point, (ForceType)i, layer);
+            forceVectors[index] = (ft, GetTotalForceTypeAtPoint(point, ft, layer));
+            index++;
         }
 
         return forceVectors;
@@ -204,44 +230,50 @@ public class ForceManagerSO : ScriptableObject
     /// <param name="point">The point in World Space to use check against all Force Producers</param>
     /// <param name="forceType">The type of force to check for</param>
     /// <returns></returns>
-    public Vector3 GetTotalForceTypeAtPoint(Vector3 point, ForceType forceType, int? layer = null)
+    public Vector3 GetTotalForceTypeAtPoint(Vector3 point, ForceTypeSO forceType, int? layer = null)
     {
-        Vector3 weightecVector = Vector3.zero;
+        Vector3 weightedVector = Vector3.zero;
         Vector3 additiveVector = Vector3.zero;
         float alpha = 0;
 
         foreach (ForceProducer producer in producers)
         {
-            if (!producer.enableForce || (producer.forceType != forceType)) continue;
+            if (!producer.isStatic) producer.UpdateProducer();
+            if (!producer.enableForce || !forceType.mixesWith.Contains(producer.forceType)) continue;
+            //if (!producer.enableForce || (producer.forceType != forceType)) continue;
             // if layer is set, check against layer mask
             if (layer.HasValue ? !(producer.layerMask == (producer.layerMask | (1 << layer.Value))) : false) continue;
 
             // only calculate if gravity isn't at 100% and not additive
             if (!producer.additive && alpha < 1)
             {
-                Vector3 vector = producer.ForceVector(point, out float strength);
-                vector *= producer.invert ? -1 : 1;
-                if (strength > 0)
+                if (producer.PointInRange(point))
                 {
-                    ForcesStaticMembers.VectorCompositeStraight(alpha, strength, weightecVector, vector, out alpha, out weightecVector);
+                    Vector3 vector = producer.ForceVector(point, out float strength);
+                    vector *= producer.invert ? -1 : 1;
+                    if (strength > 0)
+                    {
+                        ForcesStaticMembers.VectorCompositeStraight(alpha, strength, weightedVector, vector, out alpha, out weightedVector);
+                    }
                 }
+
             }
             else if (producer.additive)
             {
-                Vector3 vector = producer.ForceVector(point, out float strength);
-                vector *= producer.invert ? -1 : 1;
-                if (strength > 0)
+                if (producer.PointInRange(point))
                 {
-                    additiveVector += vector * strength;
+                    Vector3 vector = producer.ForceVector(point);
+                    vector *= producer.invert ? -1 : 1;
+                    additiveVector += vector;
                 }
             }
         }
         if (alpha < 1)
         {
             // add in default gravity
-            ForcesStaticMembers.VectorCompositeStraight(alpha, 1, weightecVector, Vector3.zero, out alpha, out weightecVector);
+            ForcesStaticMembers.VectorCompositeStraight(alpha, 1, weightedVector, Vector3.zero, out alpha, out weightedVector);
         }
 
-        return (weightecVector + additiveVector);
+        return (weightedVector + additiveVector);
     }
 }

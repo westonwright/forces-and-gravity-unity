@@ -8,19 +8,26 @@ public class BoxShape : BaseShape
 
     private readonly Bounds baseBounds = new Bounds(Vector3.zero, Vector3.one);
 
-    protected override void OnDrawGizmos()
+    // TODO: add support for center offset
+    public override void DrawShapeGizmo(Color color, float expansion)
     {
-        Gizmos.color = ForcesStaticMembers.shapeColor;
+        Gizmos.color = color;
 
         Bounds b = bounds;
         Gizmos.matrix = Matrix4x4.TRS(b.center, transform.rotation, transform.lossyScale);
 
-        Gizmos.DrawWireCube(Vector3.zero, size);
+        Gizmos.DrawWireCube(Vector3.zero, size + ForcesStaticMembers.DivideVectors((Vector3.one * expansion * 2), transform.lossyScale));
     }
 
-    protected override Bounds GetBounds()
+    protected override Bounds CalculateBounds()
     {
-        return ForcesStaticMembers.LocalToGlobalBounds(baseBounds, center, size, transform);
+        //return ForcesStaticMembers.LocalToGlobalBounds(baseBounds, center, size, transform);
+        return ForcesStaticMembers.LocalToGlobalBounds(baseBounds, Vector3.zero, size, transform);
+    }
+
+    public override Bounds GetExpandedBounds(float expansion)
+    {
+        return new Bounds(bounds.center, bounds.size + Vector3.one * expansion * 2);
     }
 
     public override Vector3 ClosestPointOnShape(Vector3 to)
@@ -29,7 +36,7 @@ public class BoxShape : BaseShape
         var local = transform.InverseTransformPoint(to);
 
         // Now, shift it to be in the center of the box
-        local -= center;
+        //local -= center;
 
         //Pre multiply to save operations.
         var halfSize = size * 0.5f;
@@ -72,7 +79,7 @@ public class BoxShape : BaseShape
         var local = transform.InverseTransformPoint(to);
 
         // Now, shift it to be in the center of the box
-        local -= center;
+        //local -= center;
 
         //Pre multiply to save operations.
         var halfSize = size * 0.5f;
@@ -124,11 +131,20 @@ public class BoxShape : BaseShape
         normal = transform.TransformDirection(normal);
 
         // Now we undo our transformations
-        localNorm += center;
+        //localNorm += center;
 
         //Debug.DrawRay(ct.TransformPoint(localNorm), normal, Color.red);
 
         // Return resulting point
         return transform.TransformPoint(localNorm);
+    }
+
+    public override float SignedDistance(Vector3 to)
+    {
+        // TODO: add in center offset
+        Vector3 local = ForcesStaticMembers.MultiplyVectors(transform.InverseTransformPoint(to), transform.lossyScale);
+        Vector3 offset = ForcesStaticMembers.AbsVector(local) - ForcesStaticMembers.MultiplyVectors(size / 2, transform.lossyScale);
+        //Debug.Log(Vector3.Magnitude(ForcesStaticMembers.MaxVector(offset, 0)) + Mathf.Min(ForcesStaticMembers.VectorHighest(offset), 0));
+        return Vector3.Magnitude(ForcesStaticMembers.MaxVector(offset, 0)) + Mathf.Min(ForcesStaticMembers.VectorHighest(offset), 0);
     }
 }

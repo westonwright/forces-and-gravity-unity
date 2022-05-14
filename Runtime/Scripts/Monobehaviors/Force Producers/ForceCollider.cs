@@ -13,8 +13,9 @@ public class ForceCollider : ForceProducer
     private float forceRange = 5f;
     [SerializeField]
     [Tooltip("The distance it takes for the force to fade")]
-    protected float falloffRange = 0f;
+    private float falloffRange = 0f;
 
+    // TODO: change this to checking bounds instead of radius
     private float activationRadius = 0;
 
     private Collider forceCollider;
@@ -24,35 +25,10 @@ public class ForceCollider : ForceProducer
         if (preview)
         {
             Collider col = GetComponent<Collider>();
-            //These show the activation radius and the bounding box
-            //Gizmos.DrawWireSphere(col.bounds.center, Vector3.Distance(col.bounds.max - col.bounds.center, Vector3.zero) + gravityRange);
-            //Gizmos.DrawWireCube(col.bounds.center, col.bounds.size);
 
-            switch (forceType)
-            {
-                case ForceType.Force:
-                    Gizmos.color = new Color(1, 0, 0, 1);
-                    break;
-                case ForceType.Acceleration:
-                    Gizmos.color = new Color(1, .5f, 0, 1);
-                    break;
-                case ForceType.Impulse:
-                    Gizmos.color = new Color(1, 1, 0, 1);
-                    break;
-                case ForceType.VelocityChange:
-                    Gizmos.color = new Color(.5f, 1, 0, 1);
-                    break;
-                case ForceType.Wind:
-                    Gizmos.color = new Color(0, 1, 0, 1);
-                    break;
-                case ForceType.Gravity:
-                    Gizmos.color = new Color(0, 1, .5f, 1);
-                    break;
-                case ForceType.Generic:
-                    Gizmos.color = new Color(0, 1, 1, 1);
-                    break;
-            }
-            Gizmos.color = (additive ? Gizmos.color : Gizmos.color * new Color(.75f, .75f, .75f, 1)) * (enableForce ? 1 : .25f);
+            Gizmos.color = forceType.previewColor;
+
+            Gizmos.color = (additive ? Gizmos.color : Gizmos.color * ForcesStaticMembers.lightGray) * (enableForce ? 1 : .25f);
             Gizmos.matrix = Matrix4x4.TRS(transform.position, transform.rotation, Vector3.one);
 
             if (col is MeshCollider)
@@ -77,7 +53,7 @@ public class ForceCollider : ForceProducer
                     falloffMesh.vertices = (col as MeshCollider).sharedMesh.vertices;
                     falloffMesh.triangles = (col as MeshCollider).sharedMesh.triangles;
                     falloffMesh.normals = (col as MeshCollider).sharedMesh.normals;
-                    Gizmos.color = ForcesStaticMembers.MultiplyColors(Gizmos.color, new Color(1, 1, 1, .25f)); //makes falloff semi-transparent
+                    Gizmos.color = ForcesStaticMembers.MultiplyColors(Gizmos.color, ForcesStaticMembers.semiTransparent); //makes falloff semi-transparent
                     for (int i = 0; i < vertices.Length; i++)
                     {
                         vertices[i] += normals[i] * falloffRange;
@@ -89,21 +65,21 @@ public class ForceCollider : ForceProducer
             }
             else if (col is SphereCollider)
             {
-                Gizmos.DrawWireSphere(ForcesStaticMembers.MultiplyVectors(transform.localScale, (col as SphereCollider).center), (ForcesStaticMembers.VectorMax(transform.localScale) * (col as SphereCollider).radius) + forceRange);
-                Gizmos.color = ForcesStaticMembers.MultiplyColors(Gizmos.color, new Color(1, 1, 1, .25f)); //makes falloff semi-transparent
-                Gizmos.DrawWireSphere(ForcesStaticMembers.MultiplyVectors(transform.localScale, (col as SphereCollider).center), (ForcesStaticMembers.VectorMax(transform.localScale) * (col as SphereCollider).radius) + forceRange + falloffRange);
+                Gizmos.DrawWireSphere(ForcesStaticMembers.MultiplyVectors(transform.localScale, (col as SphereCollider).center), (ForcesStaticMembers.VectorHighest(transform.localScale) * (col as SphereCollider).radius) + forceRange);
+                Gizmos.color = ForcesStaticMembers.MultiplyColors(Gizmos.color, ForcesStaticMembers.semiTransparent); //makes falloff semi-transparent
+                Gizmos.DrawWireSphere(ForcesStaticMembers.MultiplyVectors(transform.localScale, (col as SphereCollider).center), (ForcesStaticMembers.VectorHighest(transform.localScale) * (col as SphereCollider).radius) + forceRange + falloffRange);
             }
             else if (col is BoxCollider)
             {
                 Gizmos.DrawWireCube(ForcesStaticMembers.MultiplyVectors(transform.localScale, (col as BoxCollider).center), ForcesStaticMembers.AddToVector(ForcesStaticMembers.MultiplyVectors(transform.localScale, (col as BoxCollider).size), forceRange));
-                Gizmos.color = ForcesStaticMembers.MultiplyColors(Gizmos.color, new Color(1, 1, 1, .25f)); //makes falloff semi-transparent
+                Gizmos.color = ForcesStaticMembers.MultiplyColors(Gizmos.color, ForcesStaticMembers.semiTransparent); //makes falloff semi-transparent
                 Gizmos.DrawWireCube(ForcesStaticMembers.MultiplyVectors(transform.localScale, (col as BoxCollider).center), ForcesStaticMembers.AddToVector(ForcesStaticMembers.MultiplyVectors(transform.localScale, (col as BoxCollider).size), forceRange + falloffRange));
             }
-            //figure this out later
+            // TODO: fill these in from other shape gizmos
             else if (col is CapsuleCollider)
             {
             }
-            //figure this out later
+            // TODO: figure out visualization for this
             else if (col is TerrainCollider)
             {
 
@@ -113,8 +89,18 @@ public class ForceCollider : ForceProducer
 
     protected override void Reset()
     {
+        base.Reset();
+
+        forceRange = 5f;
+        falloffRange = 0f;
+
+        Cleanup();
+    }
+
+    protected override void Cleanup()
+    {
         forceCollider = GetComponent<Collider>();
-        if(forceCollider is MeshCollider)
+        if (forceCollider is MeshCollider)
         {
             if (gameObject.GetComponent<MeshColliderKDTree>() == null)
             {
@@ -135,7 +121,7 @@ public class ForceCollider : ForceProducer
 #if UNITY_EDITOR
     protected override void OnValidate()
     {
-        Reset();
+        Cleanup();
     }
 #endif
 
@@ -162,60 +148,95 @@ public class ForceCollider : ForceProducer
                 }
             }
         }
-        UpdateActivationRadius();
-    }
-
-    public override Vector3 ForceVector(Vector3 point, out float strength)
-    {
-        strength = 0;
-        Vector3 normal = Vector3.zero;
-        //don't calculate gravity vector if strength is 0
-
-        //see if point is in activation radius before getting strength from distance to surface
-        float distance = Vector3.Distance(point, forceCollider.bounds.center);
-        if (distance <= activationRadius)
-        {
-            Vector3 surfacePoint = ColliderCalculations.ClosestPointOnCollider(forceCollider, point, ref normal);
-            if (normal == Vector3.zero)
-            {
-                strength = 0;
-                return Vector3.zero;
-            }
-            distance = Vector3.Distance(point, surfacePoint);
-
-            if (distance > forceRange + falloffRange)
-            {
-                return Vector3.zero;
-            }
-            else if(distance > forceRange)
-            {
-                strength = 1 - ((distance - forceRange) / falloffRange);
-                return -normal * forceStrength;
-            }
-            else
-            {
-                strength = 1;
-                return -normal * forceStrength;
-            }
-        }
-        else
-        {
-            return Vector3.zero;
-        }
     }
 
     public override Vector3 ForceVector(Vector3 point)
     {
         Vector3 normal = Vector3.zero;
-        ColliderCalculations.ClosestPointOnCollider(forceCollider, point, ref normal);
-        return -normal * forceStrength;
+        Vector3 surfacePoint = ColliderCalculations.ClosestPointOnCollider(forceCollider, point, ref normal);
+        if (normal == Vector3.zero)
+        {
+            return Vector3.zero;
+        }
+
+        float distance = Vector3.Distance(point, surfacePoint);
+        if (distance > forceRange + falloffRange)
+        {
+            return Vector3.zero;
+        }
+        else if (distance > forceRange)
+        {
+            float strength = 1 - ((distance - forceRange) / falloffRange);
+            return -normal * forceStrength * strength;
+        }
+        else
+        {
+            return -normal * forceStrength;
+        }
     }
 
-    //use these if position or scale is changing
-    public void UpdateActivationRadius()
+    public override Vector3 ForceVector(Vector3 point, out float strength)
     {
-        activationRadius = Vector3.Distance(forceCollider.bounds.max - forceCollider.bounds.center, Vector3.zero) + forceRange + falloffRange;
+        strength = 0;
+
+        Vector3 normal = Vector3.zero;
+        Vector3 surfacePoint = ColliderCalculations.ClosestPointOnCollider(forceCollider, point, ref normal);
+        if (normal == Vector3.zero)
+        {
+            strength = 0;
+            return Vector3.zero;
+        }
+        float distance = Vector3.Distance(point, surfacePoint);
+        if (distance > forceRange + falloffRange)
+        {
+            return Vector3.zero;
+        }
+        else if(distance > forceRange)
+        {
+            strength = 1 - ((distance - forceRange) / falloffRange);
+            return -normal * forceStrength;
+        }
+        else
+        {
+            strength = 1;
+            return -normal * forceStrength;
+        }
     }
 
+    public override bool PointInRange(Vector3 point)
+    {
+        float distance = Vector3.Distance(point, forceCollider.bounds.center);
+        if (distance <= activationRadius)
+        {
+            return true;
+        }
+        return false;
+    }
+
+    public void SetFalloffRange(float range)
+    {
+        falloffRange = range;
+        needsUpdate = true;
+        UpdateProducer();
+    }
+
+    public void SetForceRange(float range)
+    {
+        forceRange = range;
+        needsUpdate = true;
+        UpdateProducer();
+    }
+
+    // use these if position or scale is changing
+    // or if falloff/force range changed
+    public override void UpdateProducer()
+    {
+        if (transform.hasChanged || needsUpdate)
+        {
+            activationRadius = Vector3.Distance(forceCollider.bounds.max - forceCollider.bounds.center, Vector3.zero) + forceRange + falloffRange;
+            transform.hasChanged = false;
+            needsUpdate = false;
+        }
+    }
 }
 

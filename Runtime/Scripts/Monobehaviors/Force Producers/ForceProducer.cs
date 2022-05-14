@@ -7,20 +7,27 @@ using UnityEngine;
 /// </summary>
 public class ForceProducer : MonoBehaviour
 {
+    [Tooltip("If this producer should update its transform when needed")]
+    public bool isStatic = false;
     //if gizmos should be drawn
     [SerializeField]
     [Tooltip("If Gizmos should be drawn for this source")]
     protected bool preview = true;
     [Tooltip("If this force source should be enabled by default.")]
     public bool enableForce = true;
-    [Tooltip("How you want the produced forces to apply to rigidbodies. Generic is a special types that allow you to have custom behaviors in your own scripts.")]
-    public ForceType forceType = ForceType.Acceleration;
+    [SerializeField]
+    [Tooltip("The Force Type scriptable object that will define how this prodecer behaves")]
+    protected ForceTypeSO ForceType;
+    public ForceTypeSO forceType { get { return ForceType; } }
+
+    //[Tooltip("How you want the produced forces to apply to rigidbodies. Generic is a special types that allow you to have custom behaviors in your own scripts.")]
+    //public ForceType forceType = ForceType.Acceleration;
     [Tooltip("What layers this produce will effect")]
     public LayerMask layerMask = ~0;
 
     //how strong this source's gravity is
     [SerializeField]
-    protected float forceStrength = 9.8f;
+    protected float forceStrength = 10f;
 
     // TODO: Add selector for type of falloff. eg. linear, inverse square, etc.)
 
@@ -34,8 +41,34 @@ public class ForceProducer : MonoBehaviour
     // broadcasts to
     protected ForceManagerSO forceManagerSO;
 
+    // used to determin if bounds/other aspects should be recalculated
+    protected bool needsUpdate = true;
+
     protected virtual void OnDrawGizmos()
     {
+    }
+
+    protected virtual void DrawArrow(Color color, Vector3 pos, Quaternion rot, Vector3 scale, float magnitude)
+    {
+        Gizmos.color = color;
+        float pointSize = .2f * magnitude;
+
+        Gizmos.matrix = Matrix4x4.TRS(pos, rot, scale);
+        Vector3 arrowBottom = Vector3.zero;
+        Vector3 arrowTop = arrowBottom + Vector3.up * magnitude;
+        Vector3 leftPoint = arrowTop + (Vector3.left * pointSize) + (Vector3.down * pointSize);
+        Vector3 rightPoint = arrowTop + (Vector3.right * pointSize) + (Vector3.down * pointSize);
+        Vector3 frontPoint = arrowTop + (Vector3.forward * pointSize) + (Vector3.down * pointSize);
+        Vector3 backPoint = arrowTop + (Vector3.back * pointSize) + (Vector3.down * pointSize);
+        Gizmos.DrawLine(arrowBottom, arrowTop);
+        Gizmos.DrawLine(arrowTop, leftPoint);
+        Gizmos.DrawLine(arrowTop, rightPoint);
+        Gizmos.DrawLine(arrowTop, frontPoint);
+        Gizmos.DrawLine(arrowTop, backPoint);
+        Gizmos.DrawLine(frontPoint, leftPoint);
+        Gizmos.DrawLine(leftPoint, backPoint);
+        Gizmos.DrawLine(backPoint, rightPoint);
+        Gizmos.DrawLine(rightPoint, frontPoint);
     }
 
     protected virtual void Reset()
@@ -46,6 +79,23 @@ public class ForceProducer : MonoBehaviour
             Debug.LogError("Destorying 'ForceProducer' on " + gameObject + "!", gameObject);
             DestroyImmediate(this);
         }
+        else
+        {
+            preview = true;
+            enableForce = true;
+            ForceType = ForcesStaticMembers.defaultForceTypeSO;
+            layerMask = ~0;
+
+            forceStrength = 10f;
+            importance = 1;
+            additive = false;
+            invert = false;
+        }
+    }
+
+    protected virtual void Cleanup()
+    {
+
     }
 
 #if UNITY_EDITOR
@@ -62,6 +112,8 @@ public class ForceProducer : MonoBehaviour
         {
             forceManagerSO.AddForceProducer(this);
         }
+        needsUpdate = true;
+        UpdateProducer();
     }
 
     protected virtual void OnDisable()
@@ -75,6 +127,10 @@ public class ForceProducer : MonoBehaviour
     public virtual void EnableForce(bool enabled)
     {
         enableForce = enabled;
+        if (enableForce)
+        {
+            UpdateProducer();
+        }
     }
 
     // these next two functions should be overridden by child classes
@@ -91,5 +147,16 @@ public class ForceProducer : MonoBehaviour
     {
         strength = 1;
         return Vector3.zero;
+    }
+
+    public virtual bool PointInRange(Vector3 point)
+    {
+        return false;
+    }
+
+    public virtual void UpdateProducer()
+    {
+        // update bounds or anything else thats needed here
+        // be sure to check if things need to actually be updated to avoid unecessary calculations
     }
 }

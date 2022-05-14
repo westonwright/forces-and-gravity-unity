@@ -42,12 +42,11 @@ public class CapsuleShape : BaseShape
         }
     }
 
-
     // TODO: Come up with better visualization for this
-    protected override void OnDrawGizmos()
+    public override void DrawShapeGizmo(Color color, float expansion)
     {
-        Gizmos.DrawWireCube(bounds.center, bounds.size);
-        Gizmos.color = ForcesStaticMembers.shapeColor;
+        // TODO: add in center offset
+        Gizmos.color = color;
 
         Bounds b = bounds;
         Gizmos.matrix = Matrix4x4.TRS(b.center, transform.rotation, Vector3.one);
@@ -55,32 +54,47 @@ public class CapsuleShape : BaseShape
         Vector3 sphereOffset = Vector3.zero;
         float maxRad = 0;
         Vector3 capRadius = Vector3.zero;
+        Vector3 lineUp = Vector3.zero;
+        Vector3 lineRight = Vector3.zero;
         switch (_direction)
         {
             case Direction.X:
                 maxRad = Mathf.Max(Mathf.Abs(transform.lossyScale.y), Mathf.Abs(transform.lossyScale.z));
                 sphereOffset = Vector3.right * ((height / 2)) * transform.lossyScale.x;
-                capRadius = new Vector3(radius * maxRad, 0, 0);
+                capRadius = new Vector3(radius * maxRad, 0, 0) ;
+                lineUp = new Vector3(0, radius * maxRad + expansion, 0);
+                lineRight = new Vector3(0, 0, radius * maxRad + expansion);
                 break;
             case Direction.Y:
                 maxRad = Mathf.Max(Mathf.Abs(transform.lossyScale.x), Mathf.Abs(transform.lossyScale.z));
                 sphereOffset = Vector3.up * ((height / 2)) * transform.lossyScale.y;
                 capRadius = new Vector3(0, radius * maxRad, 0);
+                lineUp = new Vector3(radius * maxRad + expansion, 0, 0);
+                lineRight = new Vector3(0, 0, radius * maxRad + expansion);
                 break;
             case Direction.Z:
-                maxRad = Mathf.Max(Mathf.Abs(transform.lossyScale.y), Mathf.Abs(transform.lossyScale.y));
+                maxRad = Mathf.Max(Mathf.Abs(transform.lossyScale.x), Mathf.Abs(transform.lossyScale.y));
                 sphereOffset = Vector3.forward * ((height / 2)) * transform.lossyScale.z;
                 capRadius = new Vector3(0, 0, radius * maxRad);
+                lineUp = new Vector3(radius * maxRad + expansion, 0, 0);
+                lineRight = new Vector3(0, radius * maxRad + expansion, 0);
                 break;
         }
+        Vector3 upperSphere = Vector3.zero + ForcesStaticMembers.MaxVector((sphereOffset - capRadius), 0);
+        Vector3 lowerSphere = Vector3.zero - ForcesStaticMembers.MaxVector((sphereOffset - capRadius), 0);
 
-        Gizmos.DrawWireSphere(Vector3.zero + (sphereOffset - capRadius), radius * maxRad);
-        Gizmos.DrawWireSphere(Vector3.zero - (sphereOffset - capRadius), radius * maxRad);
+        Gizmos.DrawWireSphere(upperSphere, radius * maxRad + expansion);
+        Gizmos.DrawWireSphere(lowerSphere, radius * maxRad + expansion);
+
+        Gizmos.DrawLine(upperSphere + lineUp, lowerSphere + lineUp);
+        Gizmos.DrawLine(upperSphere - lineUp, lowerSphere - lineUp);
+        Gizmos.DrawLine(upperSphere + lineRight, lowerSphere + lineRight);
+        Gizmos.DrawLine(upperSphere - lineRight, lowerSphere - lineRight);
     }
 
     // TODO: Make better for garbage collection
     // TODO: Find min size when scale is too large to prevent inverse growing
-    protected override Bounds GetBounds()
+    protected override Bounds CalculateBounds()
     {
         Vector3 boundsOffset = Vector3.zero;
         float maxRad = 0;
@@ -106,131 +120,288 @@ public class CapsuleShape : BaseShape
 
         Bounds topBounds = new Bounds
         (
-            (transform.rotation * (ForcesStaticMembers.MultiplyVectors(center + boundsOffset, transform.lossyScale) - capRadius)) + transform.position,
+            //(transform.rotation * (ForcesStaticMembers.MultiplyVectors(center + boundsOffset, transform.lossyScale) - capRadius)) + transform.position,
+            (transform.rotation * (ForcesStaticMembers.MultiplyVectors(boundsOffset, transform.lossyScale) - capRadius)) + transform.position,
             (radius * 2 * maxRad) * Vector3.one
         );
         
         Bounds bottomBounds = new Bounds
         (
-            (transform.rotation * (ForcesStaticMembers.MultiplyVectors(center - boundsOffset, transform.lossyScale) + capRadius)) + transform.position,
+            //(transform.rotation * (ForcesStaticMembers.MultiplyVectors(center - boundsOffset, transform.lossyScale) + capRadius)) + transform.position,
+            (transform.rotation * (ForcesStaticMembers.MultiplyVectors(boundsOffset, transform.lossyScale) + capRadius)) + transform.position,
             (radius * 2 * maxRad) * Vector3.one
         );
 
         Bounds totalBounds = new Bounds();
-        totalBounds.center = (transform.rotation * ForcesStaticMembers.MultiplyVectors(center, transform.lossyScale)) + transform.position;
+        //totalBounds.center = (transform.rotation * ForcesStaticMembers.MultiplyVectors(center, transform.lossyScale)) + transform.position;
+        totalBounds.center =transform.position;
         totalBounds.max = Vector3.Max(topBounds.center + topBounds.extents, bottomBounds.center + bottomBounds.extents);
         totalBounds.min = Vector3.Min(topBounds.center - topBounds.extents, bottomBounds.center - bottomBounds.extents);
 
         return totalBounds;
     }
 
+    public override Bounds GetExpandedBounds(float expansion)
+    {
+        return new Bounds(bounds.center, bounds.size + Vector3.one * expansion * 2);
+    }
+
+
     public override Vector3 ClosestPointOnShape(Vector3 to)
     {
-        float lineLength = height - radius * 2; // The length of the line connecting the center of both sphere
+        Vector3 local = to - transform.position;
+        local = Quaternion.Inverse(transform.rotation) * local;
+
+        float lineLength;
+        float localY;
         Vector3 dir;
+        float maxRadScale;
+        Vector3 scaleVector;
         switch (direction)
         {
             case 0:
                 dir = Vector3.right;
+
+                maxRadScale = Mathf.Max(transform.lossyScale.y, transform.lossyScale.z);
+                scaleVector = new Vector3(transform.lossyScale.x, maxRadScale, maxRadScale);
+                local = ForcesStaticMembers.DivideVectors(local, scaleVector);
+
+                lineLength = Mathf.Max((height * transform.lossyScale.x) - (radius * maxRadScale) * 2, 0);
+                lineLength /= transform.lossyScale.x;
+                localY = local.x;
                 break;
             case 1:
                 dir = Vector3.up;
+
+                maxRadScale = Mathf.Max(transform.lossyScale.x, transform.lossyScale.z);
+                scaleVector = new Vector3(maxRadScale, transform.lossyScale.y, maxRadScale);
+                local = ForcesStaticMembers.DivideVectors(local, scaleVector);
+
+                lineLength = Mathf.Max((height * transform.lossyScale.y) - (radius * maxRadScale) * 2, 0);
+                lineLength /= transform.lossyScale.y;
+                localY = local.y;
                 break;
             case 2:
                 dir = Vector3.forward;
+
+                maxRadScale = Mathf.Max(transform.lossyScale.x, transform.lossyScale.y);
+                scaleVector = new Vector3(maxRadScale, maxRadScale, transform.lossyScale.z);
+                local = ForcesStaticMembers.DivideVectors(local, scaleVector);
+
+                lineLength = Mathf.Max((height * transform.lossyScale.z) - (radius * maxRadScale) * 2, 0);
+                lineLength /= transform.lossyScale.z;
+                localY = local.z;
                 break;
             default:
                 dir = Vector3.up;
+
+                maxRadScale = Mathf.Max(transform.lossyScale.x, transform.lossyScale.z);
+                scaleVector = new Vector3(maxRadScale, transform.lossyScale.y, maxRadScale);
+                local = ForcesStaticMembers.DivideVectors(local, scaleVector);
+
+                lineLength = Mathf.Max((height * transform.lossyScale.y) - (radius * maxRadScale) * 2, 0);
+                lineLength /= transform.lossyScale.y;
+                localY = local.y;
                 break;
         }
-
-        Vector3 upperSphere = dir * lineLength * 0.5f + center; // The position of the radius of the upper sphere in local coordinates
-        Vector3 lowerSphere = -dir * lineLength * 0.5f + center; // The position of the radius of the lower sphere in local coordinates
-
-        Vector3 local = transform.InverseTransformPoint(to); // The position of the controller in local coordinates
+        //Vector3 upperSphere = dir * lineLength * 0.5f + center; // The position of the radius of the upper sphere in local coordinates
+        //Vector3 lowerSphere = -dir * lineLength * 0.5f + center; // The position of the radius of the lower sphere in local coordinates
+        Vector3 upperSphere = dir * lineLength * 0.5f; // The position of the radius of the upper sphere in local coordinates
+        Vector3 lowerSphere = -dir * lineLength * 0.5f; // The position of the radius of the lower sphere in local coordinates
 
         Vector3 p = Vector3.zero; // Contact point
-        Vector3 pt = Vector3.zero; // The point we need to use to get a direction vector with the controller to calculate contact point
 
-        if (local.y < lineLength * 0.5f && local.y > -lineLength * 0.5f) // Controller is contacting with cylinder, not spheres
+        if (localY < lineLength * 0.5f && localY > -lineLength * 0.5f) // Controller is contacting with cylinder, not spheres
         {
-            pt = dir * local.y + center;
+            //Debug.Log("Center");
+            //p = dir * localY + center;
+            p = dir * localY;
         }
-        else if (local.y > lineLength * 0.5f) // Controller is contacting with the upper sphere
+        else if (localY > lineLength * 0.5f) // Controller is contacting with the upper sphere
         {
-            pt = upperSphere;
+            //Debug.Log("Upper");
+            p = upperSphere;
         }
-        else if (local.y < -lineLength * 0.5f)// Controller is contacting with lower sphere
+        else if (localY < -lineLength * 0.5f)// Controller is contacting with lower sphere
         {
-
-            pt = lowerSphere;
+            //Debug.Log("Lower");
+            p = lowerSphere;
         }
 
-        //Calculate contact point in local coordinates and return it in world coordinates
-        p = local - pt;
-        p.Normalize();
-        p = p * radius + pt;
+        p = ForcesStaticMembers.MultiplyVectors(p, scaleVector);
+        p = transform.rotation * p;
+        p += transform.position;
 
-        //Debug.DrawRay(ct.TransformPoint(p), normal, Color.red);
+        //set normal for gravity
+        Vector3 normal = (to - p).normalized;
 
-        return transform.TransformPoint(p);
+        p = p + (normal * (radius * maxRadScale));
+
+        //Debug.DrawRay(p, normal);
+
+        return p;
     }
 
     public override Vector3 ClosestPointOnShape(Vector3 to, ref Vector3 normal)
     {
-        float lineLength = height - radius * 2; // The length of the line connecting the center of both sphere
+        Vector3 local = to - transform.position;
+        local = Quaternion.Inverse(transform.rotation) * local;
+
+        float lineLength;
+        float localY;
         Vector3 dir;
+        float maxRadScale;
+        Vector3 scaleVector;
         switch (direction)
         {
             case 0:
                 dir = Vector3.right;
+
+                maxRadScale = Mathf.Max(transform.lossyScale.y, transform.lossyScale.z);
+                scaleVector = new Vector3(transform.lossyScale.x, maxRadScale, maxRadScale);
+                local = ForcesStaticMembers.DivideVectors(local, scaleVector);
+
+                lineLength = Mathf.Max((height * transform.lossyScale.x) - (radius * maxRadScale) * 2, 0);
+                lineLength /= transform.lossyScale.x;
+                localY = local.x;
                 break;
             case 1:
                 dir = Vector3.up;
+
+                maxRadScale = Mathf.Max(transform.lossyScale.x, transform.lossyScale.z);
+                scaleVector = new Vector3(maxRadScale, transform.lossyScale.y, maxRadScale);
+                local = ForcesStaticMembers.DivideVectors(local, scaleVector);
+
+                lineLength = Mathf.Max((height * transform.lossyScale.y) - (radius * maxRadScale) * 2, 0);
+                lineLength /= transform.lossyScale.y;
+                localY = local.y;
                 break;
             case 2:
                 dir = Vector3.forward;
+
+                maxRadScale = Mathf.Max(transform.lossyScale.x, transform.lossyScale.y);
+                scaleVector = new Vector3(maxRadScale, maxRadScale, transform.lossyScale.z);
+                local = ForcesStaticMembers.DivideVectors(local, scaleVector);
+
+                lineLength = Mathf.Max((height * transform.lossyScale.z) - (radius * maxRadScale) * 2, 0);
+                lineLength /= transform.lossyScale.z;
+                localY = local.z;
                 break;
             default:
                 dir = Vector3.up;
+
+                maxRadScale = Mathf.Max(transform.lossyScale.x, transform.lossyScale.z);
+                scaleVector = new Vector3(maxRadScale, transform.lossyScale.y, maxRadScale);
+                local = ForcesStaticMembers.DivideVectors(local, scaleVector);
+
+                lineLength = Mathf.Max((height * transform.lossyScale.y) - (radius * maxRadScale) * 2, 0);
+                lineLength /= transform.lossyScale.y;
+                localY = local.y;
+                break;
+        }
+        //Vector3 upperSphere = dir * lineLength * 0.5f + center; // The position of the radius of the upper sphere in local coordinates
+        //Vector3 lowerSphere = -dir * lineLength * 0.5f + center; // The position of the radius of the lower sphere in local coordinates
+        Vector3 upperSphere = dir * lineLength * 0.5f; // The position of the radius of the upper sphere in local coordinates
+        Vector3 lowerSphere = -dir * lineLength * 0.5f; // The position of the radius of the lower sphere in local coordinates
+        
+        Vector3 p = Vector3.zero; // Contact point
+
+        if (localY < lineLength * 0.5f && localY > -lineLength * 0.5f) // Controller is contacting with cylinder, not spheres
+        {
+            //Debug.Log("Center");
+            //p = dir * localY + center;
+            p = dir * localY;
+        }
+        else if (localY > lineLength * 0.5f) // Controller is contacting with the upper sphere
+        {
+            //Debug.Log("Upper");
+            p = upperSphere;
+        }
+        else if (localY < -lineLength * 0.5f)// Controller is contacting with lower sphere
+        {
+            //Debug.Log("Lower");
+            p = lowerSphere;
+        }
+
+        p = ForcesStaticMembers.MultiplyVectors(p, scaleVector);
+        p = transform.rotation * p;
+        p += transform.position;
+
+        //set normal for gravity
+        normal = (to - p).normalized;
+        
+        p = p + (normal * (radius * maxRadScale));
+
+        //Debug.DrawRay(p, normal);
+
+        return p;
+    }
+
+    public override float SignedDistance(Vector3 to)
+    {
+        float lineLength;
+        Vector3 dir;
+        float maxRadScale;
+        Vector3 scaleVector;
+        switch (direction)
+        {
+            case 0:
+                dir = Vector3.right;
+
+                maxRadScale = Mathf.Max(transform.lossyScale.y, transform.lossyScale.z);
+                scaleVector = new Vector3(transform.lossyScale.x, maxRadScale, maxRadScale);
+
+                lineLength = Mathf.Max((height * transform.lossyScale.x) - (radius * maxRadScale) * 2, 0);
+                lineLength /= transform.lossyScale.x;
+                break;
+            case 1:
+                dir = Vector3.up;
+
+                maxRadScale = Mathf.Max(transform.lossyScale.x, transform.lossyScale.z);
+                scaleVector = new Vector3(maxRadScale, transform.lossyScale.y, maxRadScale);
+
+                lineLength = Mathf.Max((height * transform.lossyScale.y) - (radius * maxRadScale) * 2, 0);
+                lineLength /= transform.lossyScale.y;
+                break;
+            case 2:
+                dir = Vector3.forward;
+
+                maxRadScale = Mathf.Max(transform.lossyScale.x, transform.lossyScale.y);
+                scaleVector = new Vector3(maxRadScale, maxRadScale, transform.lossyScale.z);
+
+                lineLength = Mathf.Max((height * transform.lossyScale.z) - (radius * maxRadScale) * 2, 0);
+                lineLength /= transform.lossyScale.z;
+                break;
+            default:
+                dir = Vector3.up;
+
+                maxRadScale = Mathf.Max(transform.lossyScale.x, transform.lossyScale.z);
+                scaleVector = new Vector3(maxRadScale, transform.lossyScale.y, maxRadScale);
+
+                lineLength = Mathf.Max((height * transform.lossyScale.y) - (radius * maxRadScale) * 2, 0);
+                lineLength /= transform.lossyScale.y;
                 break;
         }
 
-        Vector3 upperSphere = dir * lineLength * 0.5f + center; // The position of the radius of the upper sphere in local coordinates
-        Vector3 lowerSphere = -dir * lineLength * 0.5f + center; // The position of the radius of the lower sphere in local coordinates
+        //Vector3 upperSphere = dir * lineLength * 0.5f + center; // The position of the radius of the upper sphere in local coordinates
+        Vector3 upperSphere = dir * lineLength * 0.5f; // The position of the radius of the upper sphere in local coordinates
+        upperSphere = ForcesStaticMembers.MultiplyVectors(upperSphere, scaleVector);
+        upperSphere = transform.rotation * upperSphere;
+        upperSphere += transform.position;
 
-        Vector3 local = transform.InverseTransformPoint(to); // The position of the controller in local coordinates
+        //Vector3 lowerSphere = -dir * lineLength * 0.5f + center; // The position of the radius of the lower sphere in local coordinates
+        Vector3 lowerSphere = -dir * lineLength * 0.5f; // The position of the radius of the lower sphere in local coordinates
+        lowerSphere = ForcesStaticMembers.MultiplyVectors(lowerSphere, scaleVector);
+        lowerSphere = transform.rotation * lowerSphere;
+        lowerSphere += transform.position;
 
-        Vector3 p = Vector3.zero; // Contact point
-        Vector3 pt = Vector3.zero; // The point we need to use to get a direction vector with the controller to calculate contact point
+        Vector3 upperOffset = to - upperSphere;
+        Vector3 lowerOffset = lowerSphere - upperSphere;
 
-        if (local.y < lineLength * 0.5f && local.y > -lineLength * 0.5f) // Controller is contacting with cylinder, not spheres
-        {
-            pt = dir * local.y + center;
-            normal = dir * local.y;
-        }
-        else if (local.y > lineLength * 0.5f) // Controller is contacting with the upper sphere
-        {
-            pt = upperSphere;
-            normal = dir * lineLength * 0.5f;
-        }
-        else if (local.y < -lineLength * 0.5f)// Controller is contacting with lower sphere
-        {
+        float h = Mathf.Clamp(Vector3.Dot(upperOffset, lowerOffset) / Vector3.Dot(lowerOffset, lowerOffset), 0, 1);
 
-            pt = lowerSphere;
-            normal = -dir * lineLength * 0.5f;
-        }
-
-        //set normal for gravity
-        normal = transform.TransformDirection((local - normal).normalized);
-
-        //Calculate contact point in local coordinates and return it in world coordinates
-        p = local - pt;
-        p.Normalize();
-        p = p * radius + pt;
-
-        //Debug.DrawRay(ct.TransformPoint(p), normal, Color.red);
-
-        return transform.TransformPoint(p);
+        Debug.Log(Vector3.Magnitude(upperOffset - lowerOffset * h) - (radius * maxRadScale));
+        return Vector3.Magnitude(upperOffset - lowerOffset * h) - (radius * maxRadScale);
     }
+
 }

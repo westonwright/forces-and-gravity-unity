@@ -1,16 +1,15 @@
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-// update to allow for other types of collider?
-//change from requiring box collider
-public class ForceZone : ForceProducer
+//placed on the mesh providing gravity
+// TODO: prevent multiple surfaces (or shapes) from being applied to the same object
+public class ForceSurface : ForceProducer
 {
     [SerializeField]
-    [Tooltip("The direction of force from this zone. Will be normalized")]
-    // TODO: find a better system for setting gravity direction from editor
-    private Vector3 forceDirection = Vector3.down;
-
+    [Tooltip("How far the full-strength force extends out from the collider")]
+    //how far out this plante's gravity reaches (not including falloff range)
+    private float forceRange = 5f;
     [SerializeField]
     [Tooltip("The distance it takes for the force to fade")]
     protected float falloffRange = 0f;
@@ -23,24 +22,30 @@ public class ForceZone : ForceProducer
     {
         if (preview && enabled && baseShape != null)
         {
+            Gizmos.matrix = Matrix4x4.identity;
+            //Bounds b = baseShape.GetExpandedBounds(forceRange + falloffRange);
+            //Gizmos.DrawWireCube(b.center, b.size);
             Color c = forceType.previewColor;
             c = (additive ? c : c * ForcesStaticMembers.lightGray) * (enableForce ? 1 : .25f);
-            baseShape.DrawShapeGizmo(c, 0);
 
-            if (falloffRange > 0)
+            if(baseShape != null)
             {
-                c = ForcesStaticMembers.MultiplyColors(c, ForcesStaticMembers.semiTransparent); //makes falloff semi-transparent
-                baseShape.DrawShapeGizmo(c, falloffRange);
-            }
+                baseShape.DrawShapeGizmo(c, forceRange);
+                if (falloffRange > 0)
+                {
+                    c = ForcesStaticMembers.MultiplyColors(c, ForcesStaticMembers.semiTransparent); //makes falloff semi-transparent
 
-            DrawArrow(Color.white, transform.position, Quaternion.FromToRotation(Vector3.up, forceDirection.normalized), Vector3.one, Mathf.Max((Mathf.Log(forceStrength) + 1), .5f));
+                    baseShape.DrawShapeGizmo(c, falloffRange + forceRange);
+                }
+            }
         }
     }
+
     protected override void Reset()
     {
         base.Reset();
 
-        forceDirection = Vector3.down;
+        forceRange = 5f;
         falloffRange = 0f;
 
         Cleanup();
@@ -55,7 +60,7 @@ public class ForceZone : ForceProducer
             {
                 if (gameObject.GetComponent<MeshShapeKDTree>() == null)
                 {
-                    Debug.LogWarning("Force Zone using a Mesh Shape without a 'MeshShapeKDTree'!", gameObject);
+                    Debug.LogWarning("Force Surface using a Mesh Shape without a 'MeshShapeKDTree'!", gameObject);
                     gameObject.AddComponent<MeshShapeKDTree>();
                     Debug.LogWarning("Added a 'MeshShapeKDTree' to " + gameObject.name + ".", gameObject);
                 }
@@ -64,14 +69,14 @@ public class ForceZone : ForceProducer
             {
                 if (gameObject.GetComponent<MeshShapeKDTree>() != null)
                 {
-                    Debug.LogWarning("Force Zone \"" + gameObject.name + "\" does not need a 'MeshShapeKDTree' component because it is not using a Mesh Shape", gameObject);
+                    Debug.LogWarning("Force Surface \"" + gameObject.name + "\" does not need a 'MeshShapeKDTree' component because it is not using a Mesh Shape", gameObject);
                 }
             }
         }
         else
         {
-            Debug.LogError("Force Zone requires an attached 'Shape' to work! eg. 'BoxShape', 'SphereShape'", gameObject);
-            Debug.LogError("Removed Force Zone from " + gameObject.name + "!", gameObject);
+            Debug.LogError("Force Surface requires an attached 'Shape' to work! eg. 'BoxShape', 'SphereShape'", gameObject);
+            Debug.LogError("Removed Force Surface from " + gameObject.name + "!", gameObject);
 #if UNITY_EDITOR
             UnityEditor.EditorApplication.delayCall += () =>
             {
@@ -82,7 +87,6 @@ public class ForceZone : ForceProducer
 #endif
         }
     }
-
 
 #if UNITY_EDITOR
     protected override void OnValidate()
@@ -117,32 +121,33 @@ public class ForceZone : ForceProducer
         else
         {
             Debug.LogWarning("Force Surface requires an attached 'Shape' to work! eg. 'BoxShape', 'SphereShape'", gameObject);
-            DestroyImmediate(this);
             Debug.LogWarning("Removed Force Surface from " + gameObject.name + "!", gameObject);
+            DestroyImmediate(this);
         }
     }
 
-
-    // change to just not provide strength. eg. strength is baked in to the force returned
-    //returns the full gravity vector regardless of if the point is in the collider or not
     public override Vector3 ForceVector(Vector3 point)
     {
-        float dist = baseShape.SignedDistance(point);
-        if (dist <= 0)
+        Vector3 normal = Vector3.zero;
+        Vector3 surfacePoint = baseShape.ClosestPointOnShape(point, ref normal);
+        if (normal == Vector3.zero)
         {
-            return forceDirection.normalized * forceStrength;
+            return Vector3.zero;
+        }
+
+        float distance = Vector3.Distance(point, surfacePoint);
+        if (distance > forceRange + falloffRange)
+        {
+            return Vector3.zero;
+        }
+        else if (distance > forceRange)
+        {
+            float strength = 1 - ((distance - forceRange) / falloffRange);
+            return -normal * forceStrength * strength;
         }
         else
         {
-            if (dist < falloffRange)
-            {
-                float strength = 1 - (dist / falloffRange);
-                return forceDirection.normalized * forceStrength * strength;
-            }
-            else
-            {
-                return Vector3.zero;
-            }
+            return -normal * forceStrength;
         }
     }
 
@@ -150,24 +155,28 @@ public class ForceZone : ForceProducer
     {
         strength = 0;
 
-        float dist = baseShape.SignedDistance(point);
-        if (dist <= 0)
+        Vector3 normal = Vector3.zero;
+        Vector3 surfacePoint = baseShape.ClosestPointOnShape(point, ref normal);
+        if (normal == Vector3.zero)
         {
-            strength = 1;
-            return forceDirection.normalized * forceStrength;
+            strength = 0;
+            return Vector3.zero;
+        }
+
+        float distance = Vector3.Distance(point, surfacePoint);
+        if (distance > forceRange + falloffRange)
+        {
+            return Vector3.zero;
+        }
+        else if (distance > forceRange)
+        {
+            strength = 1 - ((distance - forceRange) / falloffRange);
+            return -normal * forceStrength;
         }
         else
         {
-            if(dist < falloffRange)
-            {
-                strength = 1 - (dist / falloffRange);
-                return forceDirection.normalized * forceStrength;
-            }
-            else
-            {
-                strength = 0;
-                return Vector3.zero;
-            }
+            strength = 1;
+            return -normal * forceStrength;
         }
     }
 
@@ -180,15 +189,16 @@ public class ForceZone : ForceProducer
         return false;
     }
 
-    public void SetForceDirection(Vector3 direction)
-    {
-        forceDirection = direction;
-    }
-
-
     public void SetFalloffRange(float range)
     {
         falloffRange = range;
+        needsUpdate = true;
+        UpdateProducer();
+    }
+
+    public void SetForceRange(float range)
+    {
+        forceRange = range;
         needsUpdate = true;
         UpdateProducer();
     }
@@ -199,9 +209,10 @@ public class ForceZone : ForceProducer
     {
         if (transform.hasChanged || needsUpdate)
         {
-            bounds = baseShape.GetExpandedBounds(falloffRange);
+            bounds = baseShape.GetExpandedBounds(forceRange + falloffRange);
             transform.hasChanged = false;
             needsUpdate = false;
         }
     }
 }
+
