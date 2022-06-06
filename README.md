@@ -12,6 +12,7 @@ Theres a lot of information there like:
 * [Code Examples](https://github.com/westonwright/forces-and-gravity-unity/wiki/Code-Examples)
 * [Documentation](https://github.com/westonwright/forces-and-gravity-unity/wiki/Documentation)
 * [Roadmap](https://github.com/westonwright/forces-and-gravity-unity/wiki/Roadmap)
+* [Tips](https://github.com/westonwright/forces-and-gravity-unity/wiki/Tips)
 
 ## Supported Versions
 Unity 2017 and up
