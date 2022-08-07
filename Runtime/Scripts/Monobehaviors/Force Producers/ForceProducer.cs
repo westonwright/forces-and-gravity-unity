@@ -5,50 +5,96 @@ using UnityEngine;
 /// <summary>
 /// Base class for all force producers. This one is not to be used
 /// </summary>
-public class ForceProducer : MonoBehaviour
+public abstract class ForceProducer : MonoBehaviour
 {
-    [Tooltip("If this producer should update its transform when needed")]
-    public bool isStatic = false;
+    protected const string MENU_NAME = "GameObject/Force Producer/";
+
+    public bool isStatic {
+        get { return gameObject.isStatic; }
+        set { gameObject.isStatic = value; }
+    }
+
     //if gizmos should be drawn
     [SerializeField]
     [Tooltip("If Gizmos should be drawn for this source")]
-    protected bool preview = true;
+    private bool Preview = true;
+    protected bool preview
+    {
+        get { return Preview && enabled; }
+    }
+
     [Tooltip("If this force source should be enabled by default.")]
-    public bool enableForce = true;
+    protected bool EnableForce = true;
+    public bool enableForce { 
+        get { return EnableForce; } 
+        set {
+            if (value && !EnableForce && !isStatic) { UpdateProducer(); }
+            EnableForce = value;
+        } 
+    }
     [SerializeField]
     [Tooltip("The Force Type scriptable object that will define how this prodecer behaves")]
     protected ForceTypeSO ForceType;
     public ForceTypeSO forceType { get { return ForceType; } }
 
-    //[Tooltip("How you want the produced forces to apply to rigidbodies. Generic is a special types that allow you to have custom behaviors in your own scripts.")]
-    //public ForceType forceType = ForceType.Acceleration;
-    [Tooltip("What layers this produce will effect")]
-    public LayerMask layerMask = ~0;
-
     //how strong this source's gravity is
     [SerializeField]
-    protected float forceStrength = 10f;
-
+    protected float ForceStrength = 10f;
+    public float forceStrength { 
+        get { return ForceStrength; }
+        set { if (!isStatic) { ForceStrength = value; } } 
+    }
+    [SerializeField]
+    [Tooltip("The distance it takes for the force to fade to zero")]
+    protected float FalloffRange = 0f;
+    public float falloffRange
+    {
+        get { return FalloffRange; }
+        set {
+            if (isStatic) return;
+            if(FalloffRange != value)
+            {
+                needsUpdate = true;
+                FalloffRange = value;
+            }
+        }
+    }
     // TODO: Add selector for type of falloff. eg. linear, inverse square, etc.)
 
+    [Tooltip("What layers this produce will effect")]
+    protected LayerMask LayerMask = ~0;
+    public LayerMask layerMask { 
+        get { return LayerMask; }
+        set { if (!isStatic) { LayerMask = value; } }
+    }
     [Tooltip("If this source should be used over another. Higher is less important. Negative is less important than anything positive and are less important as they go down, 0 is least important of everything/means importance doesn't matter.")]
-    public int importance = 1;
+    protected int Importance = 1;
+    public int importance {
+        get { return Importance; }
+        set { if (!isStatic) { Importance = value; } }
+    }
     [Tooltip("Additive means this effector will add its force to the active forces instead of overriding them. Each force mode adds/overrides seperately")]
-    public bool additive = false;
+    protected bool Additive = false;
+    public bool additive
+    {
+        get { return Additive; }
+        set { if (!isStatic) { Additive = value; } }
+    }
     [Tooltip("If the Force Vector produced from this source should be inverted")]
-    public bool invert = false;
+    protected bool Invert = false;
+    public bool invert
+    {
+        get { return Invert; }
+        set { if (!isStatic) { Invert = value; } }
+    }
 
     // broadcasts to
     protected ForceManagerSO forceManagerSO;
 
     // used to determin if bounds/other aspects should be recalculated
-    protected bool needsUpdate = true;
+    protected bool needsUpdate = false;
 
-    protected virtual void OnDrawGizmos()
-    {
-    }
-
-    protected virtual void DrawArrow(Color color, Vector3 pos, Quaternion rot, Vector3 scale, float magnitude)
+    protected void DrawGizmoArrow(Color color, Vector3 pos, Quaternion rot, Vector3 scale, float magnitude)
     {
         Gizmos.color = color;
         float pointSize = .2f * magnitude;
@@ -84,28 +130,17 @@ public class ForceProducer : MonoBehaviour
 #if UNITY_EDITOR
             ForceType = ForcesStaticMembers.defaultForceTypeSO;
 #endif
-            preview = true;
-            enableForce = true;
-            layerMask = ~0;
+            //preview = true;
+            EnableForce = true;
+            LayerMask = ~0;
 
-            forceStrength = 10f;
-            importance = 1;
-            additive = false;
-            invert = false;
+            ForceStrength = 10f;
+            FalloffRange = 0;
+            Importance = 1;
+            Additive = false;
+            Invert = false;
         }
     }
-
-    protected virtual void Cleanup()
-    {
-
-    }
-
-#if UNITY_EDITOR
-    protected virtual void OnValidate()
-    {
-
-    }
-#endif
 
     protected virtual void OnEnable()
     {
@@ -114,10 +149,8 @@ public class ForceProducer : MonoBehaviour
         {
             forceManagerSO.AddForceProducer(this);
         }
-        needsUpdate = true;
         UpdateProducer();
     }
-
     protected virtual void OnDisable()
     {
         if (forceManagerSO != null)
@@ -126,39 +159,21 @@ public class ForceProducer : MonoBehaviour
         }
     }
 
-    public virtual void EnableForce(bool enabled)
-    {
-        enableForce = enabled;
-        if (enableForce)
-        {
-            UpdateProducer();
-        }
-    }
-
     // these next two functions should be overridden by child classes
     //returns the gravity vector at this point regardless of range
-    public virtual Vector3 ForceVector(Vector3 point)
-    {
-        return Vector3.zero;
-    }
+    public abstract Vector3 ForceVector(Vector3 point);
 
     //returns where in the falloff gradient the point is
     //0 means the point is outside the range
     //1 means teh point is completely covered   
-    public virtual Vector3 ForceVector(Vector3 point, out float strength)
-    {
-        strength = 1;
-        return Vector3.zero;
-    }
+    public abstract Vector3 ForceVector(Vector3 point, out float strength);
 
-    public virtual bool PointInRange(Vector3 point)
-    {
-        return false;
-    }
+    public abstract bool PointInRange(Vector3 point);
 
-    public virtual void UpdateProducer()
-    {
-        // update bounds or anything else thats needed here
-        // be sure to check if things need to actually be updated to avoid unecessary calculations
-    }
+    // update bounds or anything else thats needed here
+    // only runs if an update needs to occur
+    public abstract void TryUpdateProducer();
+
+    // same as try update producer but will update no matter what
+    public abstract void UpdateProducer();
 }

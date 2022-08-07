@@ -4,40 +4,72 @@ using UnityEngine;
 
 public class CapsuleShape : BaseShape
 {
-   private enum Direction
+   private enum DirectionEnum
     {
         X,
         Y,
         Z
     }
 
-    public float radius = .5f;
-    public float height = 1;
     [SerializeField]
-    private Direction _direction;
+    private float Radius = .5f;
+    public float radius
+    {
+        get { return Radius; }
+        set{
+            if (isStatic) return;
+            if (Radius != value){
+                needsUpdate = true;
+                Radius = value;
+            }
+        }
+    }
+
+    [SerializeField]
+    private float Height = 1;
+    public float height
+    {
+        get { return Height; }
+        set {
+            if (isStatic) return;
+            if (Height != value) {
+                needsUpdate = true;
+                Height = value;
+            }
+        }
+    }
+
+    [SerializeField]
+    private DirectionEnum Direction;
 
     public int direction
     {
         get
         {
-            return (int)_direction;
+            return (int)Direction;
         }
         set
         {
-            switch (value)
+            if (isStatic) return;
+            if ((int)Direction != value)
             {
-                case 0:
-                    _direction = Direction.X;
-                    break;
-                case 1:
-                    _direction = Direction.Y;
-                    break;
-                case 2:
-                    _direction = Direction.Z;
-                    break;
-                default:
-                    _direction = Direction.X;
-                    break;
+                needsUpdate = true;
+
+                switch (value)
+                {
+                    case 0:
+                        Direction = DirectionEnum.X;
+                        break;
+                    case 1:
+                        Direction = DirectionEnum.Y;
+                        break;
+                    case 2:
+                        Direction = DirectionEnum.Z;
+                        break;
+                    default:
+                        Direction = DirectionEnum.X;
+                        break;
+                }
             }
         }
     }
@@ -56,23 +88,23 @@ public class CapsuleShape : BaseShape
         Vector3 capRadius = Vector3.zero;
         Vector3 lineUp = Vector3.zero;
         Vector3 lineRight = Vector3.zero;
-        switch (_direction)
+        switch (Direction)
         {
-            case Direction.X:
+            case DirectionEnum.X:
                 maxRad = Mathf.Max(Mathf.Abs(transform.lossyScale.y), Mathf.Abs(transform.lossyScale.z));
                 sphereOffset = Vector3.right * ((height / 2)) * transform.lossyScale.x;
                 capRadius = new Vector3(radius * maxRad, 0, 0) ;
                 lineUp = new Vector3(0, radius * maxRad + expansion, 0);
                 lineRight = new Vector3(0, 0, radius * maxRad + expansion);
                 break;
-            case Direction.Y:
+            case DirectionEnum.Y:
                 maxRad = Mathf.Max(Mathf.Abs(transform.lossyScale.x), Mathf.Abs(transform.lossyScale.z));
                 sphereOffset = Vector3.up * ((height / 2)) * transform.lossyScale.y;
                 capRadius = new Vector3(0, radius * maxRad, 0);
                 lineUp = new Vector3(radius * maxRad + expansion, 0, 0);
                 lineRight = new Vector3(0, 0, radius * maxRad + expansion);
                 break;
-            case Direction.Z:
+            case DirectionEnum.Z:
                 maxRad = Mathf.Max(Mathf.Abs(transform.lossyScale.x), Mathf.Abs(transform.lossyScale.y));
                 sphereOffset = Vector3.forward * ((height / 2)) * transform.lossyScale.z;
                 capRadius = new Vector3(0, 0, radius * maxRad);
@@ -92,64 +124,6 @@ public class CapsuleShape : BaseShape
         Gizmos.DrawLine(upperSphere - lineRight, lowerSphere - lineRight);
     }
 
-    // TODO: Make better for garbage collection
-    // TODO: Find min size when scale is too large to prevent inverse growing
-    protected override Bounds CalculateBounds()
-    {
-        Vector3 boundsOffset = Vector3.zero;
-        float maxRad = 0;
-        Vector3 capRadius = Vector3.zero;
-        switch (_direction)
-        {
-            case Direction.X:
-                maxRad = Mathf.Max(Mathf.Abs(transform.lossyScale.y), Mathf.Abs(transform.lossyScale.z));
-                boundsOffset = Vector3.right * ((height / 2));
-                capRadius = new Vector3(radius * maxRad, 0, 0);
-                break;
-            case Direction.Y:
-                maxRad = Mathf.Max(Mathf.Abs(transform.lossyScale.x), Mathf.Abs(transform.lossyScale.z));
-                boundsOffset = Vector3.up * ((height / 2));
-                capRadius = new Vector3(0, radius * maxRad, 0);
-                break;
-            case Direction.Z:
-                maxRad = Mathf.Max(Mathf.Abs(transform.lossyScale.y), Mathf.Abs(transform.lossyScale.y));
-                boundsOffset = Vector3.forward * ((height / 2));
-                capRadius = new Vector3( 0, 0, radius * maxRad);
-                break;
-        }
-
-        Bounds topBounds = new Bounds
-        (
-            //(transform.rotation * (ForcesStaticMembers.MultiplyVectors(center + boundsOffset, transform.lossyScale) - capRadius)) + transform.position,
-            (transform.rotation * (ForcesStaticMembers.MultiplyVectors(Vector3.zero + boundsOffset, transform.lossyScale) - capRadius)) + transform.position,
-            //(transform.rotation * (ForcesStaticMembers.MultiplyVectors(boundsOffset, transform.lossyScale) - capRadius)) + transform.position,
-            (radius * 2 * maxRad) * Vector3.one
-        );
-        
-        Bounds bottomBounds = new Bounds
-        (
-            //(transform.rotation * (ForcesStaticMembers.MultiplyVectors(center - boundsOffset, transform.lossyScale) + capRadius)) + transform.position,
-            (transform.rotation * (ForcesStaticMembers.MultiplyVectors(Vector3.zero - boundsOffset, transform.lossyScale) + capRadius)) + transform.position,
-            //(transform.rotation * (ForcesStaticMembers.MultiplyVectors(boundsOffset, transform.lossyScale) + capRadius)) + transform.position,
-            (radius * 2 * maxRad) * Vector3.one
-        );
-
-        Bounds totalBounds = new Bounds();
-        //totalBounds.center = (transform.rotation * ForcesStaticMembers.MultiplyVectors(center, transform.lossyScale)) + transform.position;
-        totalBounds.center = (transform.rotation * ForcesStaticMembers.MultiplyVectors(Vector3.zero, transform.lossyScale)) + transform.position;
-        //totalBounds.center =transform.position;
-        totalBounds.max = Vector3.Max(topBounds.center + topBounds.extents, bottomBounds.center + bottomBounds.extents);
-        totalBounds.min = Vector3.Min(topBounds.center - topBounds.extents, bottomBounds.center - bottomBounds.extents);
-
-        return totalBounds;
-    }
-
-    public override Bounds GetExpandedBounds(float expansion)
-    {
-        return new Bounds(bounds.center, bounds.size + Vector3.one * expansion * 2);
-    }
-
-
     public override Vector3 ClosestPointOnShape(Vector3 to)
     {
         Vector3 local = to - transform.position;
@@ -160,9 +134,9 @@ public class CapsuleShape : BaseShape
         Vector3 dir;
         float maxRadScale;
         Vector3 scaleVector;
-        switch (direction)
+        switch (Direction)
         {
-            case 0:
+            case DirectionEnum.X:
                 dir = Vector3.right;
 
                 maxRadScale = Mathf.Max(transform.lossyScale.y, transform.lossyScale.z);
@@ -173,7 +147,7 @@ public class CapsuleShape : BaseShape
                 lineLength /= transform.lossyScale.x;
                 localY = local.x;
                 break;
-            case 1:
+            case DirectionEnum.Y:
                 dir = Vector3.up;
 
                 maxRadScale = Mathf.Max(transform.lossyScale.x, transform.lossyScale.z);
@@ -184,7 +158,7 @@ public class CapsuleShape : BaseShape
                 lineLength /= transform.lossyScale.y;
                 localY = local.y;
                 break;
-            case 2:
+            case DirectionEnum.Z:
                 dir = Vector3.forward;
 
                 maxRadScale = Mathf.Max(transform.lossyScale.x, transform.lossyScale.y);
@@ -245,7 +219,7 @@ public class CapsuleShape : BaseShape
         return p;
     }
 
-    public override Vector3 ClosestPointOnShape(Vector3 to, ref Vector3 normal)
+    public override Vector3 ClosestPointOnShape(Vector3 to, out Vector3 normal)
     {
         Vector3 local = to - transform.position;
         local = Quaternion.Inverse(transform.rotation) * local;
@@ -255,9 +229,9 @@ public class CapsuleShape : BaseShape
         Vector3 dir;
         float maxRadScale;
         Vector3 scaleVector;
-        switch (direction)
+        switch (Direction)
         {
-            case 0:
+            case DirectionEnum.X:
                 dir = Vector3.right;
 
                 maxRadScale = Mathf.Max(transform.lossyScale.y, transform.lossyScale.z);
@@ -268,7 +242,7 @@ public class CapsuleShape : BaseShape
                 lineLength /= transform.lossyScale.x;
                 localY = local.x;
                 break;
-            case 1:
+            case DirectionEnum.Y:
                 dir = Vector3.up;
 
                 maxRadScale = Mathf.Max(transform.lossyScale.x, transform.lossyScale.z);
@@ -279,7 +253,7 @@ public class CapsuleShape : BaseShape
                 lineLength /= transform.lossyScale.y;
                 localY = local.y;
                 break;
-            case 2:
+            case DirectionEnum.Z:
                 dir = Vector3.forward;
 
                 maxRadScale = Mathf.Max(transform.lossyScale.x, transform.lossyScale.y);
@@ -346,9 +320,9 @@ public class CapsuleShape : BaseShape
         Vector3 dir;
         float maxRadScale;
         Vector3 scaleVector;
-        switch (direction)
+        switch (Direction)
         {
-            case 0:
+            case DirectionEnum.X:
                 dir = Vector3.right;
 
                 maxRadScale = Mathf.Max(transform.lossyScale.y, transform.lossyScale.z);
@@ -357,7 +331,7 @@ public class CapsuleShape : BaseShape
                 lineLength = Mathf.Max((height * transform.lossyScale.x) - (radius * maxRadScale) * 2, 0);
                 lineLength /= transform.lossyScale.x;
                 break;
-            case 1:
+            case DirectionEnum.Y:
                 dir = Vector3.up;
 
                 maxRadScale = Mathf.Max(transform.lossyScale.x, transform.lossyScale.z);
@@ -366,7 +340,7 @@ public class CapsuleShape : BaseShape
                 lineLength = Mathf.Max((height * transform.lossyScale.y) - (radius * maxRadScale) * 2, 0);
                 lineLength /= transform.lossyScale.y;
                 break;
-            case 2:
+            case DirectionEnum.Z:
                 dir = Vector3.forward;
 
                 maxRadScale = Mathf.Max(transform.lossyScale.x, transform.lossyScale.y);
@@ -407,4 +381,60 @@ public class CapsuleShape : BaseShape
         return Vector3.Magnitude(upperOffset - lowerOffset * h) - (radius * maxRadScale);
     }
 
+    // TODO: Make better for garbage collection
+    // TODO: Find min size when scale is too large to prevent inverse growing
+    protected override Bounds CalculateBounds()
+    {
+        Vector3 boundsOffset = Vector3.zero;
+        float maxRad = 0;
+        Vector3 capRadius = Vector3.zero;
+        switch (Direction)
+        {
+            case DirectionEnum.X:
+                maxRad = Mathf.Max(Mathf.Abs(transform.lossyScale.y), Mathf.Abs(transform.lossyScale.z));
+                boundsOffset = Vector3.right * ((height / 2));
+                capRadius = new Vector3(radius * maxRad, 0, 0);
+                break;
+            case DirectionEnum.Y:
+                maxRad = Mathf.Max(Mathf.Abs(transform.lossyScale.x), Mathf.Abs(transform.lossyScale.z));
+                boundsOffset = Vector3.up * ((height / 2));
+                capRadius = new Vector3(0, radius * maxRad, 0);
+                break;
+            case DirectionEnum.Z:
+                maxRad = Mathf.Max(Mathf.Abs(transform.lossyScale.y), Mathf.Abs(transform.lossyScale.y));
+                boundsOffset = Vector3.forward * ((height / 2));
+                capRadius = new Vector3(0, 0, radius * maxRad);
+                break;
+        }
+
+        Bounds topBounds = new Bounds
+        (
+            //(transform.rotation * (ForcesStaticMembers.MultiplyVectors(center + boundsOffset, transform.lossyScale) - capRadius)) + transform.position,
+            (transform.rotation * (ForcesStaticMembers.MultiplyVectors(Vector3.zero + boundsOffset, transform.lossyScale) - capRadius)) + transform.position,
+            //(transform.rotation * (ForcesStaticMembers.MultiplyVectors(boundsOffset, transform.lossyScale) - capRadius)) + transform.position,
+            (radius * 2 * maxRad) * Vector3.one
+        );
+
+        Bounds bottomBounds = new Bounds
+        (
+            //(transform.rotation * (ForcesStaticMembers.MultiplyVectors(center - boundsOffset, transform.lossyScale) + capRadius)) + transform.position,
+            (transform.rotation * (ForcesStaticMembers.MultiplyVectors(Vector3.zero - boundsOffset, transform.lossyScale) + capRadius)) + transform.position,
+            //(transform.rotation * (ForcesStaticMembers.MultiplyVectors(boundsOffset, transform.lossyScale) + capRadius)) + transform.position,
+            (radius * 2 * maxRad) * Vector3.one
+        );
+
+        Bounds totalBounds = new Bounds();
+        //totalBounds.center = (transform.rotation * ForcesStaticMembers.MultiplyVectors(center, transform.lossyScale)) + transform.position;
+        totalBounds.center = (transform.rotation * ForcesStaticMembers.MultiplyVectors(Vector3.zero, transform.lossyScale)) + transform.position;
+        //totalBounds.center =transform.position;
+        totalBounds.max = Vector3.Max(topBounds.center + topBounds.extents, bottomBounds.center + bottomBounds.extents);
+        totalBounds.min = Vector3.Min(topBounds.center - topBounds.extents, bottomBounds.center - bottomBounds.extents);
+
+        return totalBounds;
+    }
+
+    public override Bounds CalculateExpandedBounds(float expansion)
+    {
+        return new Bounds(bounds.center, bounds.size + Vector3.one * expansion * 2);
+    }
 }

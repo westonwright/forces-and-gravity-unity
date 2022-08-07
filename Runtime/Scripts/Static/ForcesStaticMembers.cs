@@ -7,12 +7,13 @@ using UnityEditor;
 public static class ForcesStaticMembers
 {
     //private static string forceManagerSOName = "ForceManagerSO.asset";
-    private static string defaultForceTypeSOName = "ForceSO.asset";
-    private static string packageName = "com.weston-wright.forces-and-gravity";
-    private static string scriptableObjectsPath = "/Runtime/Scriptable Objects/";
+    private static readonly string defaultForceTypeSOName = "ForceSO.asset";
+    private static readonly string packageName = "com.weston-wright.forces-and-gravity";
+    private static readonly string scriptableObjectsPath = "/Runtime/Scriptable Objects/";
     //private static string managersSOPath = "Managers/";
-    private static string forceTypeSOPath = "Force Types/";
+    private static readonly string forceTypeSOPath = "Force Types/";
 
+    private static readonly string forceManagerSOResourcePath = "ForceManagerSO";
     public static ForceManagerSO forceManagerSO;
     public static ForceTypeSO defaultForceTypeSO;
 
@@ -22,15 +23,7 @@ public static class ForcesStaticMembers
 
     static ForcesStaticMembers()
     {
-        forceManagerSO = Resources.Load<ForceManagerSO>("ForceManagerSO");
-        defaultForceTypeSO = Resources.Load<ForceTypeSO>("ForceSO");
-        /*
-        forceManagerSO = (ForceManagerSO)AssetDatabase.LoadAssetAtPath(dataPath + packageName + scriptableObjectsPath + managersSOPath + forceManagerSOName, typeof(ForceManagerSO));
-        if (forceManagerSO == null)
-        {
-            Debug.LogError("Missing Scriptable Object " + forceManagerSOName + "! Package may be corrupted !");
-        }
-        */
+        forceManagerSO = Resources.Load<ForceManagerSO>(forceManagerSOResourcePath);
 
 #if UNITY_EDITOR
 
@@ -227,11 +220,6 @@ public static class ForcesStaticMembers
     {
         alpha = alphaA + (alphaB * (1 - alphaA));
         color = ((vectorA * alphaA) + ((vectorB * alphaB) * (1 - alphaA))) / alpha;
-    }
-
-    public static Color MultiplyColors(Color c1, Color c2)
-    {
-        return new Color(c1.r * c2.r, c1.g * c2.g, c1.b * c2.b, c1.a * c2.a);
     }
     
     public static Vector3 MultiplyVectors(Vector3 v1, Vector3 v2)

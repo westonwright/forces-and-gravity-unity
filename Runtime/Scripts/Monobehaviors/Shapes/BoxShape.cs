@@ -4,9 +4,21 @@ using UnityEngine;
 
 public class BoxShape : BaseShape
 {
-    public Vector3 size = Vector3.one;
+    [SerializeField]
+    private Vector3 Size = Vector3.one;
+    public Vector3 size
+    {
+        get { return Size; }
+        set{
+            if (isStatic) return;
+            if (Size != value){
+                needsUpdate = true;
+                Size = value;
+            }
+        }
+    }
 
-    private readonly Bounds baseBounds = new Bounds(Vector3.zero, Vector3.one);
+    private static readonly Bounds baseBounds = new Bounds(Vector3.zero, Vector3.one);
 
     // TODO: add support for center offset
     public override void DrawShapeGizmo(Color color, float expansion)
@@ -17,17 +29,6 @@ public class BoxShape : BaseShape
         Gizmos.matrix = Matrix4x4.TRS(b.center, transform.rotation, transform.lossyScale);
 
         Gizmos.DrawWireCube(Vector3.zero, size + ForcesStaticMembers.DivideVectors((Vector3.one * expansion * 2), transform.lossyScale));
-    }
-
-    protected override Bounds CalculateBounds()
-    {
-        //return ForcesStaticMembers.LocalToGlobalBounds(baseBounds, center, size, transform);
-        return ForcesStaticMembers.LocalToGlobalBounds(baseBounds, Vector3.zero, size, transform);
-    }
-
-    public override Bounds GetExpandedBounds(float expansion)
-    {
-        return new Bounds(bounds.center, bounds.size + Vector3.one * expansion * 2);
     }
 
     public override Vector3 ClosestPointOnShape(Vector3 to)
@@ -73,7 +74,7 @@ public class BoxShape : BaseShape
         return transform.TransformPoint(localNorm);
     }
 
-    public override Vector3 ClosestPointOnShape(Vector3 to, ref Vector3 normal)
+    public override Vector3 ClosestPointOnShape(Vector3 to, out Vector3 normal)
     {
         // Firstly, transform the point into the space of the collider
         var local = transform.InverseTransformPoint(to);
@@ -146,5 +147,16 @@ public class BoxShape : BaseShape
         Vector3 offset = ForcesStaticMembers.AbsVector(local) - ForcesStaticMembers.MultiplyVectors(size / 2, transform.lossyScale);
         //Debug.Log(Vector3.Magnitude(ForcesStaticMembers.MaxVector(offset, 0)) + Mathf.Min(ForcesStaticMembers.VectorHighest(offset), 0));
         return Vector3.Magnitude(ForcesStaticMembers.MaxVector(offset, 0)) + Mathf.Min(ForcesStaticMembers.VectorHighest(offset), 0);
+    }
+
+    protected override Bounds CalculateBounds()
+    {
+        //return ForcesStaticMembers.LocalToGlobalBounds(baseBounds, center, size, transform);
+        return ForcesStaticMembers.LocalToGlobalBounds(baseBounds, Vector3.zero, size, transform);
+    }
+
+    public override Bounds CalculateExpandedBounds(float expansion)
+    {
+        return new Bounds(bounds.center, bounds.size + Vector3.one * expansion * 2);
     }
 }

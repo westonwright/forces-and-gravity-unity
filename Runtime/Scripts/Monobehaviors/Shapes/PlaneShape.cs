@@ -4,9 +4,21 @@ using UnityEngine;
 
 public class PlaneShape : BaseShape
 {
-    public Vector2 size = Vector2.one;
+    [SerializeField]
+    private Vector2 Size = Vector2.one;
+    public Vector2 size
+    {
+        get { return Size; }
+        set {
+            if (isStatic) return;
+            if (Size != value) {
+                needsUpdate = true;
+                Size = value;
+            }
+        }
+    }
 
-    private readonly Bounds baseBounds = new Bounds(Vector3.zero, Vector3.one);
+    private static readonly Bounds baseBounds = new Bounds(Vector3.zero, Vector3.one);
 
     public override void DrawShapeGizmo(Color color, float expansion)
     {
@@ -27,20 +39,6 @@ public class PlaneShape : BaseShape
         Gizmos.DrawLine(tl + expansionOffset, bl + expansionOffset);
     }
 
-    protected override Bounds CalculateBounds()
-    {
-        //return ForcesStaticMembers.LocalToGlobalBounds(baseBounds, center, size, transform);
-        return ForcesStaticMembers.LocalToGlobalBounds(baseBounds, Vector3.zero, size, transform);
-    }
-
-    public override Bounds GetExpandedBounds(float expansion)
-    {
-        Bounds newBounds = bounds;
-        newBounds.center = newBounds.center + (transform.rotation * (Vector3.forward * expansion));
-        newBounds.SetMinMax(ForcesStaticMembers.MinOfVectors(bounds.min, newBounds.min), ForcesStaticMembers.MaxOfVectors(bounds.max, newBounds.max));
-        return newBounds;
-    }
-
     // TODO: Find better way to cache this
     // TODO: Find better behavior for falloff and range
     public override Vector3 ClosestPointOnShape(Vector3 to)
@@ -53,7 +51,7 @@ public class PlaneShape : BaseShape
         return transform.TransformPoint(local);
     }
 
-    public override Vector3 ClosestPointOnShape(Vector3 to, ref Vector3 normal)
+    public override Vector3 ClosestPointOnShape(Vector3 to, out Vector3 normal)
     {
         // TODO: make work with center offset
         Vector3 local = transform.InverseTransformPoint(to);
@@ -107,5 +105,19 @@ public class PlaneShape : BaseShape
         Plane p = new Plane(transform.rotation * Vector3.forward, bounds.center);
         float distance = p.GetDistanceToPoint(to);
         return distance < 0 ? Mathf.Infinity : distance; // return infinity if behind the plane
+    }
+
+    protected override Bounds CalculateBounds()
+    {
+        //return ForcesStaticMembers.LocalToGlobalBounds(baseBounds, center, size, transform);
+        return ForcesStaticMembers.LocalToGlobalBounds(baseBounds, Vector3.zero, size, transform);
+    }
+
+    public override Bounds CalculateExpandedBounds(float expansion)
+    {
+        Bounds newBounds = bounds;
+        newBounds.center = newBounds.center + (transform.rotation * (Vector3.forward * expansion));
+        newBounds.SetMinMax(ForcesStaticMembers.MinOfVectors(bounds.min, newBounds.min), ForcesStaticMembers.MaxOfVectors(bounds.max, newBounds.max));
+        return newBounds;
     }
 }

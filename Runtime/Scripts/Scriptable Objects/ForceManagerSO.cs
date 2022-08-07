@@ -125,7 +125,7 @@ public class ForceManagerSO : ScriptableObject
 
         foreach (ForceProducer producer in producers)
         {
-            if (!producer.isStatic) producer.UpdateProducer();
+            if (!producer.isStatic) producer.TryUpdateProducer();
             if (!producer.enableForce || !forceType.mixesWith.Contains(producer.forceType)) continue;
             //if (!producer.enableForce || (producer.forceType != forceType)) continue;
             // if layer is set, check against layer mask
@@ -185,7 +185,7 @@ public class ForceManagerSO : ScriptableObject
 
         foreach (ForceProducer producer in producers)
         {
-            if (!producer.isStatic) producer.UpdateProducer();
+            if (!producer.isStatic) producer.TryUpdateProducer();
             if (!producer.enableForce || !forceType.mixesWith.Contains(producer.forceType)) continue;
             //if (!producer.enableForce || (producer.forceType != forceType)) continue;
             // if layer is set, check against layer mask
@@ -238,7 +238,7 @@ public class ForceManagerSO : ScriptableObject
 
         foreach (ForceProducer producer in producers)
         {
-            if (!producer.isStatic) producer.UpdateProducer();
+            if (!producer.isStatic) producer.TryUpdateProducer();
             if (!producer.enableForce || !forceType.mixesWith.Contains(producer.forceType)) continue;
             //if (!producer.enableForce || (producer.forceType != forceType)) continue;
             // if layer is set, check against layer mask

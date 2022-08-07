@@ -4,7 +4,19 @@ using UnityEngine;
 
 public class SphereShape : BaseShape
 {
-    public float radius = .5f;
+    [SerializeField]
+    private float Radius = .5f;
+    public float radius
+    {
+        get { return Radius; }
+        set {
+            if (isStatic) return;
+            if (Radius != value) {
+                needsUpdate = true;
+                Radius = value;
+            }
+        }
+    }
 
     public override void DrawShapeGizmo(Color color, float expansion)
     {
@@ -14,21 +26,6 @@ public class SphereShape : BaseShape
         Gizmos.matrix = Matrix4x4.TRS(b.center, transform.rotation, b.size);
 
         Gizmos.DrawWireSphere(Vector3.zero, .5f + (expansion / ForcesStaticMembers.VectorHighest(b.size)));
-    }
-
-    protected override Bounds CalculateBounds()
-    {
-        return new Bounds
-        (
-            //(transform.rotation * ForcesStaticMembers.MultiplyVectors(center, transform.lossyScale)) + transform.position,
-            transform.rotation * transform.position,
-            (radius * 2 * ForcesStaticMembers.VectorHighest(transform.lossyScale)) * Vector3.one
-        );
-    }
-
-    public override Bounds GetExpandedBounds(float expansion)
-    {
-        return new Bounds(bounds.center, bounds.size + Vector3.one * expansion * 2);
     }
 
     public override Vector3 ClosestPointOnShape(Vector3 to)
@@ -46,7 +43,7 @@ public class SphereShape : BaseShape
         return p;
     }
 
-    public override Vector3 ClosestPointOnShape(Vector3 to, ref Vector3 normal)
+    public override Vector3 ClosestPointOnShape(Vector3 to, out Vector3 normal)
     {
         Vector3 p;
 
@@ -72,4 +69,20 @@ public class SphereShape : BaseShape
         //Debug.Log(Vector3.Magnitude(local) - (radius * ForcesStaticMembers.VectorHighest(transform.lossyScale)));
         return Vector3.Magnitude(local) - (radius * ForcesStaticMembers.VectorHighest(transform.lossyScale));
     }
+
+
+    protected override Bounds CalculateBounds()
+    {
+        return new Bounds
+        (
+            transform.rotation * transform.position,
+            (radius * 2 * ForcesStaticMembers.VectorHighest(transform.lossyScale)) * Vector3.one
+        );
+    }
+
+    public override Bounds CalculateExpandedBounds(float expansion)
+    {
+        return new Bounds(bounds.center, bounds.size + Vector3.one * expansion * 2);
+    }
+
 }

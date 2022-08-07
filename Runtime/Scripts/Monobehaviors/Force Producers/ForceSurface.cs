@@ -4,39 +4,93 @@ using UnityEngine;
 
 //placed on the mesh providing gravity
 // TODO: prevent multiple surfaces (or shapes) from being applied to the same object
+[RequireComponent(typeof(BaseShape))]
 public class ForceSurface : ForceProducer
 {
+#if UNITY_EDITOR
+    protected const string SUB_MENU = "Surface/";
+    [UnityEditor.MenuItem(MENU_NAME + SUB_MENU + "Box", false, 0)]
+    static void InstantiateCubeSurface()
+    {
+        GameObject go = new GameObject("Force Box Surface");
+        go.AddComponent<BoxShape>();
+        go.AddComponent<ForceSurface>();
+    }
+    [UnityEditor.MenuItem(MENU_NAME + SUB_MENU + "Sphere", false, 1)]
+    static void InstantiateSphereSurface()
+    {
+        GameObject go = new GameObject("Force Sphere Surface");
+        go.AddComponent<SphereShape>();
+        go.AddComponent<ForceSurface>();
+    }
+    [UnityEditor.MenuItem(MENU_NAME + SUB_MENU + "Capsule", false, 2)]
+    static void InstantiateCapsuleSurface()
+    {
+        GameObject go = new GameObject("Force Capsule Surface");
+        go.AddComponent<CapsuleShape>();
+        go.AddComponent<ForceSurface>();
+    }
+    [UnityEditor.MenuItem(MENU_NAME + SUB_MENU + "Plane", false, 3)]
+    static void InstantiatePlaneSurface()
+    {
+        GameObject go = new GameObject("Force Plane Surface");
+        go.AddComponent<PlaneShape>();
+        go.AddComponent<ForceSurface>();
+    }
+    [UnityEditor.MenuItem(MENU_NAME + SUB_MENU + "Mesh", false, 4)]
+    static void InstantiateMeshSurface()
+    {
+        GameObject go = new GameObject("Force Mesh Surface");
+        Mesh mesh = Resources.GetBuiltinResource<Mesh>("Cylinder.fbx");
+        MeshShape.AddMeshShapeComponent(go, mesh);
+        go.AddComponent<ForceSurface>();
+
+    }
+#endif
+
     [SerializeField]
     [Tooltip("How far the full-strength force extends out from the collider")]
     //how far out this plante's gravity reaches (not including falloff range)
-    private float forceRange = 5f;
-    [SerializeField]
-    [Tooltip("The distance it takes for the force to fade")]
-    protected float falloffRange = 0f;
-
-    private Bounds bounds;
-
-    private BaseShape baseShape;
-
-    protected override void OnDrawGizmos()
+    private float ForceRange = 5f;
+    public float forceRange
     {
-        if (preview && enabled && baseShape != null)
-        {
-            Gizmos.matrix = Matrix4x4.identity;
-            //Bounds b = baseShape.GetExpandedBounds(forceRange + falloffRange);
-            //Gizmos.DrawWireCube(b.center, b.size);
-            Color c = forceType.previewColor;
-            c = (additive ? c : c * ForcesStaticMembers.lightGray) * (enableForce ? 1 : .25f);
-
-            if(baseShape != null)
+        get { return ForceRange; }
+        set {
+            if (isStatic) return;
+            if(ForceRange != value)
             {
-                baseShape.DrawShapeGizmo(c, forceRange);
-                if (falloffRange > 0)
-                {
-                    c = ForcesStaticMembers.MultiplyColors(c, ForcesStaticMembers.semiTransparent); //makes falloff semi-transparent
+                needsUpdate = true;
+                ForceRange = value;
+            }
+        }
+    }
 
-                    baseShape.DrawShapeGizmo(c, falloffRange + forceRange);
-                }
+    private Bounds Bounds;
+    public Bounds bounds { get { return Bounds; } }
+
+    private BaseShape BaseShape;
+    public BaseShape baseShape { get { return BaseShape; } }
+
+    private MeshKDTree meshKDTree;
+
+    private void OnDrawGizmos()
+    {
+        if (!preview) return;
+        BaseShape baseShape = GetComponent<BaseShape>();
+
+        Gizmos.matrix = Matrix4x4.identity;
+
+        Color c = forceType.previewColor;
+        c = (additive ? c : c * ForcesStaticMembers.lightGray) * (enableForce ? 1 : .25f);
+
+        if(baseShape != null)
+        {
+            baseShape.DrawShapeGizmo(c, forceRange);
+            if (falloffRange > 0)
+            {
+                c = c * ForcesStaticMembers.semiTransparent; //makes falloff semi-transparent
+
+                baseShape.DrawShapeGizmo(c, falloffRange + forceRange);
             }
         }
     }
@@ -45,91 +99,18 @@ public class ForceSurface : ForceProducer
     {
         base.Reset();
 
-        forceRange = 5f;
-        falloffRange = 0f;
-
-        Cleanup();
+        ForceRange = 5f;
     }
-
-    protected override void Cleanup()
-    {
-        baseShape = GetComponent<BaseShape>();
-        if (baseShape != null)
-        {
-            if (baseShape is MeshShape)
-            {
-                if (gameObject.GetComponent<MeshShapeKDTree>() == null)
-                {
-                    Debug.LogWarning("Force Surface using a Mesh Shape without a 'MeshShapeKDTree'!", gameObject);
-                    gameObject.AddComponent<MeshShapeKDTree>();
-                    Debug.LogWarning("Added a 'MeshShapeKDTree' to " + gameObject.name + ".", gameObject);
-                }
-            }
-            else
-            {
-                if (gameObject.GetComponent<MeshShapeKDTree>() != null)
-                {
-                    Debug.LogWarning("Force Surface \"" + gameObject.name + "\" does not need a 'MeshShapeKDTree' component because it is not using a Mesh Shape", gameObject);
-                }
-            }
-        }
-        else
-        {
-            Debug.LogError("Force Surface requires an attached 'Shape' to work! eg. 'BoxShape', 'SphereShape'", gameObject);
-            Debug.LogError("Removed Force Surface from " + gameObject.name + "!", gameObject);
-#if UNITY_EDITOR
-            UnityEditor.EditorApplication.delayCall += () =>
-            {
-                DestroyImmediate(this);
-            };
-#else
-            DestroyImmediate(this);
-#endif
-        }
-    }
-
-#if UNITY_EDITOR
-    protected override void OnValidate()
-    {
-        Cleanup();
-    }
-#endif
 
     private void Awake()
     {
-        baseShape = GetComponent<BaseShape>();
-
-        if (baseShape != null)
-        {
-            if (baseShape is MeshShape)
-            {
-                if (gameObject.GetComponent<MeshShapeKDTree>() == null)
-                {
-                    Debug.LogWarning("Force Surface \"" + gameObject.name + "\" does not have a 'MeshShapeKDTree' component for its Mesh! MeshShapeKDTree will be added at runtime!", gameObject);
-                    gameObject.AddComponent<MeshColliderKDTree>();
-                    Debug.LogWarning("'MeshShapeKDTree' added to " + gameObject.name + "!", gameObject);
-                }
-            }
-            else
-            {
-                if (gameObject.GetComponent<MeshShapeKDTree>() != null)
-                {
-                    Debug.LogWarning("Force Surface \"" + gameObject.name + "\" does not need a 'MeshShapeKDTree' component because it is not using a Mesh Shape", gameObject);
-                }
-            }
-        }
-        else
-        {
-            Debug.LogWarning("Force Surface requires an attached 'Shape' to work! eg. 'BoxShape', 'SphereShape'", gameObject);
-            Debug.LogWarning("Removed Force Surface from " + gameObject.name + "!", gameObject);
-            DestroyImmediate(this);
-        }
+        BaseShape = GetComponent<BaseShape>();
     }
 
     public override Vector3 ForceVector(Vector3 point)
     {
         Vector3 normal = Vector3.zero;
-        Vector3 surfacePoint = baseShape.ClosestPointOnShape(point, ref normal);
+        Vector3 surfacePoint = baseShape.ClosestPointOnShape(point, out normal);
         if (normal == Vector3.zero)
         {
             return Vector3.zero;
@@ -156,7 +137,7 @@ public class ForceSurface : ForceProducer
         strength = 0;
 
         Vector3 normal = Vector3.zero;
-        Vector3 surfacePoint = baseShape.ClosestPointOnShape(point, ref normal);
+        Vector3 surfacePoint = baseShape.ClosestPointOnShape(point, out normal);
         if (normal == Vector3.zero)
         {
             strength = 0;
@@ -189,30 +170,22 @@ public class ForceSurface : ForceProducer
         return false;
     }
 
-    public void SetFalloffRange(float range)
-    {
-        falloffRange = range;
-        needsUpdate = true;
-        UpdateProducer();
-    }
-
-    public void SetForceRange(float range)
-    {
-        forceRange = range;
-        needsUpdate = true;
-        UpdateProducer();
-    }
-
     // use these if position or scale is changing
     // or if falloff/force range changed
-    public override void UpdateProducer()
+    public override void TryUpdateProducer()
     {
-        if (transform.hasChanged || needsUpdate)
+        // don't check if transform has changed becaus Shape already does that
+        if (baseShape.hasChanged || needsUpdate)
         {
-            bounds = baseShape.GetExpandedBounds(forceRange + falloffRange);
-            transform.hasChanged = false;
+            UpdateProducer();
+            baseShape.hasChanged = false;
             needsUpdate = false;
         }
+    }
+
+    public override void UpdateProducer()
+    {
+        Bounds = baseShape.CalculateExpandedBounds(forceRange + falloffRange);
     }
 }
 

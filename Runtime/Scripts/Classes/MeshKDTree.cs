@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 // with code from HiddenMonk: https://forum.unity.com/threads/get-the-collision-points-in-physics-overlapsphere.395176/#post-2581349
 
-public class MeshKDTree : MonoBehaviour
+public class MeshKDTree
 {
     int[] tris;
     Vector3[] verts;
@@ -10,32 +10,17 @@ public class MeshKDTree : MonoBehaviour
     KDTree kd;
     VertTriList vt;
 
-    [SerializeField]
-    protected Mesh mesh;
+    //[SerializeField]
+    // dont think this needs to be serialized
+    private Transform transform;
+    private Mesh mesh;
 
-    protected virtual void Awake()
+    public MeshKDTree(Mesh mesh, Transform transform)
     {
-        if (mesh == null)
-        {
-            Debug.LogError("You have not provided a mesh for your MeshKDTree!", this);
-        }
-        else
-        {
-            InitializeKDTree();
-        }
+        this.mesh = mesh;
+        this.transform = transform;
+        InitializeKDTree();
     }
-
-    protected virtual void Reset()
-    {
-
-    }
-
-#if UNITY_EDITOR
-    protected virtual void OnValidate()
-    {
-
-    }
-#endif
 
     protected void InitializeKDTree()
     {
@@ -46,10 +31,10 @@ public class MeshKDTree : MonoBehaviour
         kd = KDTree.MakeFromPoints(verts);
     }
     
-    public Vector3 ClosestPointOnSurface(Vector3 position, ref Vector3 normal)
+    public Vector3 ClosestPointOnSurface(Vector3 position, out Vector3 normal)
     {
         position = transform.InverseTransformPoint(position);
-        return transform.TransformPoint(NearestPointOnMesh(position, verts, kd, tris, norms, vt, ref normal));
+        return transform.TransformPoint(NearestPointOnMesh(position, verts, kd, tris, norms, vt, out normal));
     }
     
     public Vector3 ClosestPointOnSurface(Vector3 position)
@@ -61,11 +46,14 @@ public class MeshKDTree : MonoBehaviour
 
     public float SignedDistance(Vector3 position)
     {
-        Vector3 normal = Vector3.zero;
-        Vector3 surfacePoint = transform.TransformPoint(NearestPointOnMesh(transform.InverseTransformPoint(position), verts, kd, tris, norms, vt, ref normal));
+        Vector3 surfacePoint = transform.TransformPoint(NearestPointOnMesh(transform.InverseTransformPoint(position), verts, kd, tris, norms, vt, out Vector3 normal));
         Vector3 offsetNormal = (surfacePoint - position).normalized;
         float distance = Vector3.Distance(surfacePoint, position);
         return Vector3.Dot(normal, offsetNormal) < 0 ? distance : -distance;
+    }
+
+    public virtual void CheckMesh()
+    {
     }
 
     public virtual void SetMesh(Mesh m)
@@ -80,7 +68,7 @@ public class MeshKDTree : MonoBehaviour
     }
 
     List<int> nearests = new List<int>();
-    private Vector3 NearestPointOnMesh(Vector3 pt, Vector3[] verts, KDTree vertProx, int[] tris, Vector3[] norms, VertTriList vt, ref Vector3 normal)
+    private Vector3 NearestPointOnMesh(Vector3 pt, Vector3[] verts, KDTree vertProx, int[] tris, Vector3[] norms, VertTriList vt, out Vector3 normal)
     {
         //First, find the nearest vertex (the nearest point must be on one of the triangles
         //that uses this vertex if the mesh is convex).

@@ -4,31 +4,41 @@ using UnityEngine;
 
 public class ForcePoint : ForceProducer
 {
-    [SerializeField]
-    [Tooltip("The distance it takes for the force to fade")]
-    protected float falloffRange = 10f;
-
-    private float radius;
-    protected override void OnDrawGizmos()
+#if UNITY_EDITOR
+    [UnityEditor.MenuItem(MENU_NAME + "Point", false, 0)]
+    static void InstantiateForcePoint()
     {
-        if (preview)
-        {
-            Gizmos.color = forceType.previewColor;
-            Gizmos.color = (additive ? Gizmos.color : Gizmos.color * ForcesStaticMembers.lightGray) * (enableForce ? 1 : .25f);
-            Gizmos.DrawWireSphere(transform.position, ForcesStaticMembers.VectorHighest(transform.localScale));
+        GameObject go = Instantiate(new ForcePoint()).gameObject;
+        go.name = "Force Point";
+    }
+#endif
 
-            if (falloffRange > 0)
-            {
-                Gizmos.color = ForcesStaticMembers.MultiplyColors(Gizmos.color, ForcesStaticMembers.semiTransparent); //makes falloff semi-transparent
-                Gizmos.DrawWireSphere(transform.position, ForcesStaticMembers.VectorHighest(transform.localScale) + falloffRange);
-            }
+    private float Radius;
+    public float radius
+    {
+        get { return Radius; }
+    }
+
+    private void OnDrawGizmos()
+    {
+        if (!preview) return;
+
+        Gizmos.color = forceType.previewColor;
+        Gizmos.color = (additive ? Gizmos.color : Gizmos.color * ForcesStaticMembers.lightGray) * (enableForce ? 1 : .25f);
+        Gizmos.DrawWireSphere(transform.position, ForcesStaticMembers.VectorHighest(transform.localScale));
+
+        if (falloffRange > 0)
+        {
+            Gizmos.color = Gizmos.color * ForcesStaticMembers.semiTransparent; //makes falloff semi-transparent
+            Gizmos.DrawWireSphere(transform.position, ForcesStaticMembers.VectorHighest(transform.localScale) + falloffRange);
         }
     }
 
     protected override void Reset()
     {
         base.Reset();
-        falloffRange = 10f;
+
+        FalloffRange = 10f;
     }
 
     // returns the force vector with strength baked in
@@ -89,20 +99,20 @@ public class ForcePoint : ForceProducer
         return false;
     }
 
-    public void SetFalloffRange(float range)
-    {
-        falloffRange = range;
-    }
-
     // use these if position or scale is changing
     // or if falloff/force range changed
-    public override void UpdateProducer()
+    public override void TryUpdateProducer()
     {
         if (transform.hasChanged || needsUpdate)
         {
-            radius = ForcesStaticMembers.VectorHighest(transform.localScale);
+            UpdateProducer();
             transform.hasChanged = false;
             needsUpdate = false;
         }
+    }
+
+    public override void UpdateProducer()
+    {
+        Radius = ForcesStaticMembers.VectorHighest(transform.localScale);
     }
 }
