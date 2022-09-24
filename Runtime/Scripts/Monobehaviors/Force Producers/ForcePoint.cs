@@ -8,8 +8,8 @@ public class ForcePoint : ForceProducer
     [UnityEditor.MenuItem(MENU_NAME + "Point", false, 0)]
     static void InstantiateForcePoint()
     {
-        GameObject go = Instantiate(new ForcePoint()).gameObject;
-        go.name = "Force Point";
+        GameObject go = new GameObject("Force Point");
+        go.AddComponent<ForcePoint>();
     }
 #endif
 

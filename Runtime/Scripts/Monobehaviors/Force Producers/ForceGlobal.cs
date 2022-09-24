@@ -9,8 +9,8 @@ public class ForceGlobal : ForceProducer
     [UnityEditor.MenuItem(MENU_NAME + "Global", false, 0)]
     static void InstantiateForceGlobal()
     {
-        GameObject go = Instantiate(new ForceGlobal()).gameObject;
-        go.name = "Force Global";
+        GameObject go = new GameObject("Force Global");
+        go.AddComponent<ForceGlobal>();
     }
 #endif
 
