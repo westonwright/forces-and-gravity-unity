@@ -61,18 +61,21 @@ public abstract class ForceProducer : MonoBehaviour
     }
     // TODO: Add selector for type of falloff. eg. linear, inverse square, etc.)
 
+    [SerializeField]
     [Tooltip("What layers this produce will effect")]
     protected LayerMask LayerMask = ~0;
     public LayerMask layerMask { 
         get { return LayerMask; }
         set { if (!isStatic) { LayerMask = value; } }
     }
+    [SerializeField]
     [Tooltip("If this source should be used over another. Higher is less important. Negative is less important than anything positive and are less important as they go down, 0 is least important of everything/means importance doesn't matter.")]
     protected int Importance = 1;
     public int importance {
         get { return Importance; }
         set { if (!isStatic) { Importance = value; } }
     }
+    [SerializeField]
     [Tooltip("Additive means this effector will add its force to the active forces instead of overriding them. Each force mode adds/overrides seperately")]
     protected bool Additive = false;
     public bool additive
@@ -80,6 +83,7 @@ public abstract class ForceProducer : MonoBehaviour
         get { return Additive; }
         set { if (!isStatic) { Additive = value; } }
     }
+    [SerializeField]
     [Tooltip("If the Force Vector produced from this source should be inverted")]
     protected bool Invert = false;
     public bool invert
